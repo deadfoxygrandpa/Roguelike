@@ -1,6 +1,5 @@
 module Main where
 
-import Array
 import Keyboard
 import Char (KeyCode)
 
@@ -60,9 +59,9 @@ state = foldp update initialState inputs
 
 display : State -> Element
 display state =
-    let row x = flow right <| map (\t -> container 20 20 middle . asText <| t) (Array.toList x)
+    let row x = flow right <| map (\t -> container 20 20 middle . asText <| t) x
         player = flow down [spacer 1 (20 * state.player.location.y), flow right [spacer (20 * state.player.location.x) 1, container 20 20 middle . asText <| state.player.avatar]]
-    in  flow right [state.interface.info, flow down [layers [flow down <| map row (Array.toList state.level.grid), player], flow down <| map plainText (take 5 state.interface.log)]]
+    in  flow right [state.interface.info, flow down [layers [flow down <| map row (Grid.toList state.level), player], flow down <| map plainText (take 5 state.interface.log)]]
 
 main = display <~ state
 

@@ -1,67 +1,33 @@
 module Main where
 
 import Keyboard
-import Char (KeyCode)
 
 import Grid
 
-type State = { player : Player
-             , level : Grid.Grid Tile
-             , interface : Interface
-             }
+import GameModel
+import GameUpdate
 
-type Player = { location : Grid.Coordinate
-              , avatar : Char
-              }
+initialPlayer : GameModel.Player
+initialPlayer = GameModel.player <| asText '@'
 
-type Tile = Int
+initialInterface : GameModel.Interface
+initialInterface = GameModel.Interface ["you enter the dungeon"] <| container 100 100 midTop (plainText "roguelike")
 
-type Interface = { log : [String]
-                 , info : Element
-                 }
+initialState : GameModel.State
+initialState = GameModel.State initialPlayer (Grid.initialize (Grid.Size 5 5) 0) initialInterface
 
-initialPlayer : Player
-initialPlayer = Player (Grid.Coordinate 2 2) '@'
+inputs : Signal GameModel.Input
+inputs = GameModel.handle <~ Keyboard.lastPressed
 
-initialInterface : Interface
-initialInterface = Interface ["you enter the dungeon"] <| container 100 100 midTop (plainText "roguelike")
+state : Signal GameModel.State
+state = foldp GameUpdate.update initialState inputs
 
-initialState : State
-initialState = State initialPlayer (Grid.initialize (Grid.Size 5 5) 0) initialInterface
-
-data Input = Up | Down | Left | Right | Nop
-
-update : Input -> State -> State
-update input state =
-    let player = state.player
-        location = player.location in
-    case input of
-        Up    -> {state| player <- {player| location  <- {location| y <- location.y - 1}}}
-        Down  -> {state| player <- {player| location  <- {location| y <- location.y + 1}}}
-        Left  -> {state| player <- {player| location  <- {location| x <- location.x - 1}}}
-        Right -> {state| player <- {player| location  <- {location| x <- location.x + 1}}}
-        Nop   -> state
-
-handle : KeyCode -> Input
-handle key =
-    case key of
-        37 -> Left
-        38 -> Up
-        39 -> Right
-        40 -> Down
-        _  -> Nop
-
-inputs : Signal Input
-inputs = handle <~ Keyboard.lastPressed
-
-state : Signal State
-state = foldp update initialState inputs
-
-display : State -> Element
+display : GameModel.State -> Element
 display state =
     let row x = flow right <| map (\t -> container 20 20 middle . asText <| t) x
-        player = flow down [spacer 1 (20 * state.player.location.y), flow right [spacer (20 * state.player.location.x) 1, container 20 20 middle . asText <| state.player.avatar]]
+        player = flow down [spacer 1 (20 * state.player.location.y), flow right [spacer (20 * state.player.location.x) 1, container 20 20 middle <| state.player.avatar]]
     in  flow right [state.interface.info, flow down [layers [flow down <| map row (Grid.toList state.level), player], flow down <| map plainText (take 5 state.interface.log)]]
 
+main : Signal Element
 main = display <~ state
 

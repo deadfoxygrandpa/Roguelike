@@ -6,7 +6,7 @@ import Grid
 
 type State = { player : Player
              , level : Grid.Grid Tile
-             , interface : Interface
+             , log : [String]
              }
 
 type Player = { location : Location
@@ -17,9 +17,7 @@ type Player = { location : Location
 type Location = Grid.Coordinate
 type Tile = Int
 
-type Interface = { log : [String]
-                 , info : Element
-                 }
+type Interface = { info : Element }
 
 data Input = Up | Down | Left | Right | Nop
 
@@ -40,3 +38,6 @@ handle key =
 
 validLocation : Location -> State -> Bool
 validLocation location state = Grid.inGrid location state.level
+
+interface : State -> Interface
+interface state = Interface <| container 100 100 midTop (plainText "roguelike")

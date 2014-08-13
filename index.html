@@ -1,312 +1,613 @@
 <!DOCTYPE HTML>
-<html><head><meta charset="UTF-8"><title>Main</title><script type="text/javascript" src="elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
-Elm.Main.make = function (_elm)
-                {
-                  "use strict";
-                  _elm.Main = _elm.Main || {};
-                  if (_elm.Main.values)
-                  return _elm.Main.values;
-                  var _N = Elm.Native,
-                      _U = _N.Utils.make(_elm),
-                      _L = _N.List.make(_elm),
-                      _A = _N.Array.make(_elm),
-                      _E = _N.Error.make(_elm),
-                      $moduleName = "Main";
-                  var Array = Elm.Array.make(_elm);
-                  var Basics = Elm.Basics.make(_elm);
-                  var Char = Elm.Char.make(_elm);
-                  var Color = Elm.Color.make(_elm);
-                  var Graphics = Graphics || {};
-                  Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-                  var Graphics = Graphics || {};
-                  Graphics.Element = Elm.Graphics.Element.make(_elm);
-                  var Grid = Elm.Grid.make(_elm);
-                  var Keyboard = Elm.Keyboard.make(_elm);
-                  var List = Elm.List.make(_elm);
-                  var Maybe = Elm.Maybe.make(_elm);
-                  var Native = Native || {};
-                  Native.Json = Elm.Native.Json.make(_elm);
-                  var Native = Native || {};
-                  Native.Ports = Elm.Native.Ports.make(_elm);
-                  var Signal = Elm.Signal.make(_elm);
-                  var String = Elm.String.make(_elm);
-                  var Text = Elm.Text.make(_elm);
-                  var Time = Elm.Time.make(_elm);
-                  var _op = {};
-                  var display = function (state)
-                                {
-                                  return function ()
-                                         {
-                                           var player = A2(Graphics.Element.flow,
-                                                           Graphics.Element.down,
-                                                           _L.fromArray([A2(Graphics.Element.spacer,
-                                                                            1,
-                                                                            20 * state.player.location.y),
-                                                                         A2(Graphics.Element.flow,
-                                                                            Graphics.Element.right,
-                                                                            _L.fromArray([A2(Graphics.Element.spacer,
-                                                                                             20 * state.player.location.x,
-                                                                                             1),
-                                                                                          A3(Graphics.Element.container,
-                                                                                             20,
-                                                                                             20,
-                                                                                             Graphics.Element.middle)(Text.asText(state.player.avatar))]))]));
-                                           var row = function (x)
-                                                     {
-                                                       return Graphics.Element.flow(Graphics.Element.right)(A2(List.map,
-                                                                                                               function (t)
-                                                                                                               {
-                                                                                                                 return A3(Graphics.Element.container,
-                                                                                                                           20,
-                                                                                                                           20,
-                                                                                                                           Graphics.Element.middle)(Text.asText(t));
-                                                                                                               },
-                                                                                                               Array.toList(x)));
-                                                     };
-                                           return A2(Graphics.Element.flow,
-                                                     Graphics.Element.right,
-                                                     _L.fromArray([state.$interface.info,
-                                                                   A2(Graphics.Element.flow,
-                                                                      Graphics.Element.down,
-                                                                      _L.fromArray([Graphics.Element.layers(_L.fromArray([Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
-                                                                                                                                                                          row,
-                                                                                                                                                                          Array.toList(state.level.grid))),
-                                                                                                                          player])),
-                                                                                    Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
-                                                                                                                                    Text.plainText,
-                                                                                                                                    A2(List.take,
-                                                                                                                                       5,
-                                                                                                                                       state.$interface.log)))]))]));
-                                         }();
-                                };
-                  var Nop = {ctor: "Nop"};
-                  var Right = {ctor: "Right"};
-                  var Left = {ctor: "Left"};
-                  var Down = {ctor: "Down"};
-                  var Up = {ctor: "Up"};
-                  var update = F2(function (input,state)
-                                  {
-                                    return function ()
-                                           {
-                                             var player = state.player;
-                                             var location = player.location;
-                                             return function ()
-                                                    {
-                                                      switch (input.ctor)
-                                                      {case
-                                                       "Down" :
-                                                         return _U.replace([["player",
-                                                                             _U.replace([["location",
-                                                                                          _U.replace([["y",
-                                                                                                       location.y + 1]],
-                                                                                                     location)]],
-                                                                                        player)]],
-                                                                           state);
-                                                       case
-                                                       "Left" :
-                                                         return _U.replace([["player",
-                                                                             _U.replace([["location",
-                                                                                          _U.replace([["x",
-                                                                                                       location.x - 1]],
-                                                                                                     location)]],
-                                                                                        player)]],
-                                                                           state);
-                                                       case
-                                                       "Nop" :
-                                                         return state;
-                                                       case
-                                                       "Right" :
-                                                         return _U.replace([["player",
-                                                                             _U.replace([["location",
-                                                                                          _U.replace([["x",
-                                                                                                       location.x + 1]],
-                                                                                                     location)]],
-                                                                                        player)]],
-                                                                           state);
-                                                       case
-                                                       "Up" :
-                                                         return _U.replace([["player",
-                                                                             _U.replace([["location",
-                                                                                          _U.replace([["y",
-                                                                                                       location.y - 1]],
-                                                                                                     location)]],
-                                                                                        player)]],
-                                                                           state);}
-                                                      _E.Case($moduleName,
-                                                              "between lines 39 and 44");
-                                                    }();
-                                           }();
-                                  });
-                  var handle = function (key)
-                               {
-                                 return function ()
-                                        {
-                                          switch (key)
-                                          {case
-                                           37 :
-                                             return Left;
-                                           case
-                                           38 :
-                                             return Up;
-                                           case
-                                           39 :
-                                             return Right;
-                                           case
-                                           40 :
-                                             return Down;}
-                                          return Nop;
-                                        }();
-                               };
-                  var inputs = A2(Signal._op["<~"],handle,Keyboard.lastPressed);
-                  var Interface = F2(function (a,b)
-                                     {
-                                       return {_: {}, info: b, log: a};
-                                     });
-                  var initialInterface = Interface(_L.fromArray(["you enter the dungeon"]))(A4(Graphics.Element.container,
-                                                                                               100,
-                                                                                               100,
-                                                                                               Graphics.Element.midTop,
-                                                                                               Text.plainText("roguelike")));
-                  var Player = F2(function (a,b)
-                                  {
-                                    return {_: {}, avatar: b, location: a};
-                                  });
-                  var initialPlayer = A2(Player,A2(Grid.Coordinate,2,2),_U.chr("@"));
-                  var State = F3(function (a,b,c)
-                                 {
-                                   return {_: {}, $interface: c, level: b, player: a};
-                                 });
-                  var initialState = A3(State,
-                                        initialPlayer,
-                                        A2(Grid.initialize,A2(Grid.Size,5,5),0),
-                                        initialInterface);
-                  var state = A3(Signal.foldp,update,initialState,inputs);
-                  var main = A2(Signal._op["<~"],display,state);
-                  _elm.Main.values = {_op: _op, initialPlayer: initialPlayer, initialInterface: initialInterface, initialState: initialState, update: update, handle: handle, inputs: inputs, state: state, display: display, main: main, Up: Up, Down: Down, Left: Left, Right: Right, Nop: Nop, State: State, Player: Player, Interface: Interface};
-                  return _elm.Main.values;
-                };Elm.Grid = Elm.Grid || {};
-Elm.Grid.make = function (_elm)
-                {
-                  "use strict";
-                  _elm.Grid = _elm.Grid || {};
-                  if (_elm.Grid.values)
-                  return _elm.Grid.values;
-                  var _N = Elm.Native,
-                      _U = _N.Utils.make(_elm),
-                      _L = _N.List.make(_elm),
-                      _A = _N.Array.make(_elm),
-                      _E = _N.Error.make(_elm),
-                      $moduleName = "Grid";
-                  var Array = Elm.Array.make(_elm);
-                  var Basics = Elm.Basics.make(_elm);
-                  var Color = Elm.Color.make(_elm);
-                  var Graphics = Graphics || {};
-                  Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-                  var Graphics = Graphics || {};
-                  Graphics.Element = Elm.Graphics.Element.make(_elm);
-                  var List = Elm.List.make(_elm);
-                  var Maybe = Elm.Maybe.make(_elm);
-                  var Native = Native || {};
-                  Native.Json = Elm.Native.Json.make(_elm);
-                  var Native = Native || {};
-                  Native.Ports = Elm.Native.Ports.make(_elm);
-                  var Signal = Elm.Signal.make(_elm);
-                  var String = Elm.String.make(_elm);
-                  var Text = Elm.Text.make(_elm);
-                  var Time = Elm.Time.make(_elm);
-                  var _op = {};
-                  var getOrFail = F2(function (_v0,grid)
-                                     {
-                                       return function ()
-                                              {
-                                                return function ()
-                                                       {
-                                                         var row = A2(Array.getOrFail,
-                                                                      _v0.y,
-                                                                      grid.grid);
-                                                         return A2(Array.getOrFail,_v0.x,row);
-                                                       }();
-                                              }();
-                                     });
-                  var get = F2(function (_v2,grid)
-                               {
-                                 return function ()
-                                        {
-                                          return function ()
-                                                 {
-                                                   var _v4 = A2(Array.get,_v2.y,grid.grid);
-                                                   switch (_v4.ctor)
-                                                   {case
-                                                    "Just" :
-                                                      return A2(Array.get,_v2.x,_v4._0);
-                                                    case
-                                                    "Nothing" :
-                                                      return Maybe.Nothing;}
-                                                   _E.Case($moduleName,"between lines 24 and 26");
-                                                 }();
-                                        }();
-                               });
-                  var getOrElse = F3(function ($default,coordinate,grid)
-                                     {
-                                       return function ()
-                                              {
-                                                var _v6 = A2(get,coordinate,grid);
-                                                switch (_v6.ctor)
-                                                {case
-                                                 "Just" :
-                                                   return _v6._0;
-                                                 case
-                                                 "Nothing" :
-                                                   return $default;}
-                                                _E.Case($moduleName,"between lines 35 and 37");
-                                              }();
-                                     });
-                  var set = F3(function (_v8,a,grid)
-                               {
-                                 return function ()
-                                        {
-                                          return _U.cmp(_v8.x,0) < 0 ? grid : _U.cmp(_v8.y,
-                                                                                     0) < 0 ? grid : _U.cmp(_v8.x,
-                                                                                                            grid.size.width) > -1 ? grid : _U.cmp(_v8.y,
-                                                                                                                                                  grid.size.height) > -1 ? grid : function ()
-                                                                                                                                                                                  {
-                                                                                                                                                                                    var row = A2(Array.getOrFail,
-                                                                                                                                                                                                 _v8.x,
-                                                                                                                                                                                                 grid.grid);
-                                                                                                                                                                                    var row$ = A3(Array.set,
-                                                                                                                                                                                                  _v8.y,
-                                                                                                                                                                                                  a,
-                                                                                                                                                                                                  row);
-                                                                                                                                                                                    return _U.replace([["grid",
-                                                                                                                                                                                                        A3(Array.set,
-                                                                                                                                                                                                           _v8.x,
-                                                                                                                                                                                                           row$,
-                                                                                                                                                                                                           grid.grid)]],
-                                                                                                                                                                                                      grid);
-                                                                                                                                                                                  }();
-                                        }();
-                               });
-                  var Coordinate = F2(function (a,b)
-                                      {
-                                        return {_: {}, x: a, y: b};
-                                      });
-                  var Size = F2(function (a,b)
-                                {
-                                  return {_: {}, height: b, width: a};
-                                });
-                  var Grid = F2(function (a,b)
-                                {
-                                  return {_: {}, grid: a, size: b};
-                                });
-                  var initialize = F2(function (_v10,a)
-                                      {
-                                        return function ()
-                                               {
-                                                 return A2(Grid,
-                                                           Array.repeat(_v10.height)(Array.repeat(_v10.width)(a)),
-                                                           _v10);
-                                               }();
-                                      });
-                  _elm.Grid.values = {_op: _op, initialize: initialize, set: set, get: get, getOrFail: getOrFail, getOrElse: getOrElse, Grid: Grid, Size: Size, Coordinate: Coordinate};
-                  return _elm.Grid.values;
-                };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>
+<html><head><meta charset="UTF-8"><title>Main</title><script type="text/javascript" src="C:\Users\aneslusan\AppData\Roaming\cabal\Elm-0.12.3\elm-runtime.js"></script><script type="text/javascript">Elm.Main = Elm.Main || {};
+Elm.Main.make = function (_elm) {
+   "use strict";
+   _elm.Main = _elm.Main || {};
+   if (_elm.Main.values)
+   return _elm.Main.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Main";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var GameModel = Elm.GameModel.make(_elm);
+   var GameUpdate = Elm.GameUpdate.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var Grid = Elm.Grid.make(_elm);
+   var Keyboard = Elm.Keyboard.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var yscale = 20;
+   var xscale = 15;
+   var display = function (state) {
+      return function () {
+         var player = A2(Graphics.Element.flow,
+         Graphics.Element.down,
+         _L.fromArray([A2(Graphics.Element.spacer,
+                      1,
+                      yscale * state.player.location.y)
+                      ,A2(Graphics.Element.flow,
+                      Graphics.Element.right,
+                      _L.fromArray([A2(Graphics.Element.spacer,
+                                   xscale * state.player.location.x,
+                                   1)
+                                   ,A3(Graphics.Element.container,
+                                   xscale,
+                                   yscale,
+                                   Graphics.Element.middle)(state.player.avatar)]))]));
+         var row = function (x) {
+            return Graphics.Element.flow(Graphics.Element.right)(A2(List.map,
+            function (t) {
+               return A3(Graphics.Element.container,
+               xscale,
+               yscale,
+               Graphics.Element.middle)(GameModel.showTile(t));
+            },
+            x));
+         };
+         return A2(Graphics.Element.flow,
+         Graphics.Element.right,
+         _L.fromArray([GameModel.$interface(state).info
+                      ,A2(Graphics.Element.flow,
+                      Graphics.Element.down,
+                      _L.fromArray([Graphics.Element.layers(_L.fromArray([Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
+                                                                         row,
+                                                                         Grid.toList(state.level)))
+                                                                         ,player]))
+                                   ,Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
+                                   Text.plainText,
+                                   A2(List.take,
+                                   5,
+                                   state.log)))]))]));
+      }();
+   };
+   var inputs = A2(Signal._op["<~"],
+   GameModel.handle,
+   Keyboard.lastPressed);
+   var initialPlayer = GameModel.player(Text.centered(Text.monospace(Text.toText("@"))));
+   var initialLevel = function () {
+      var s = _L.fromArray(["####################"
+                           ,"#        #         #"
+                           ,"#        #         #"
+                           ,"#                  #"
+                           ,"#        #         #"
+                           ,"#        #         #"
+                           ,"####################"]);
+      var toTile = function (c) {
+         return function () {
+            switch (c + "")
+            {case " ":
+               return GameModel.Floor;
+               case "#": return GameModel.Wall;
+               case "+": return GameModel.Door;
+               case "~":
+               return GameModel.Acid;}
+            _E.Case($moduleName,
+            "between lines 13 and 18");
+         }();
+      };
+      return Grid.fromList(A2(List.map,
+      function (x) {
+         return List.map(toTile)(String.toList(x));
+      },
+      s));
+   }();
+   var initialState = A3(GameModel.State,
+   initialPlayer,
+   initialLevel,
+   _L.fromArray(["you enter the dungeon"]));
+   var state = A3(Signal.foldp,
+   GameUpdate.update,
+   initialState,
+   inputs);
+   var main = A2(Signal._op["<~"],
+   display,
+   state);
+   _elm.Main.values = {_op: _op
+                      ,initialLevel: initialLevel
+                      ,initialPlayer: initialPlayer
+                      ,initialState: initialState
+                      ,inputs: inputs
+                      ,state: state
+                      ,xscale: xscale
+                      ,yscale: yscale
+                      ,display: display
+                      ,main: main};
+   return _elm.Main.values;
+};Elm.GameUpdate = Elm.GameUpdate || {};
+Elm.GameUpdate.make = function (_elm) {
+   "use strict";
+   _elm.GameUpdate = _elm.GameUpdate || {};
+   if (_elm.GameUpdate.values)
+   return _elm.GameUpdate.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "GameUpdate";
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var GameModel = Elm.GameModel.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var move = F3(function (_v0,
+   state,
+   a) {
+      return function () {
+         switch (_v0.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var location = A2(GameModel.location,
+                 a.location.x + _v0._0,
+                 a.location.y + _v0._1);
+                 return function () {
+                    var _v4 = A2(GameModel.pathable,
+                    location,
+                    state);
+                    switch (_v4)
+                    {case false: return a;
+                       case true:
+                       return _U.replace([["location"
+                                          ,location]],
+                         a);}
+                    _E.Case($moduleName,
+                    "between lines 22 and 24");
+                 }();
+              }();}
+         _E.Case($moduleName,
+         "between lines 21 and 24");
+      }();
+   });
+   var moveX = function (x) {
+      return move({ctor: "_Tuple2"
+                  ,_0: x
+                  ,_1: 0});
+   };
+   var moveY = function (y) {
+      return move({ctor: "_Tuple2"
+                  ,_0: 0
+                  ,_1: y});
+   };
+   var update = F2(function (input,
+   state) {
+      return function () {
+         var player = state.player;
+         var location = player.location;
+         return function () {
+            switch (input.ctor)
+            {case "Down":
+               return _U.replace([["player"
+                                  ,A3(moveY,1,state,player)]],
+                 state);
+               case "Left":
+               return _U.replace([["player"
+                                  ,A3(moveX,-1,state,player)]],
+                 state);
+               case "Nop": return state;
+               case "Right":
+               return _U.replace([["player"
+                                  ,A3(moveX,1,state,player)]],
+                 state);
+               case "Up":
+               return _U.replace([["player"
+                                  ,A3(moveY,-1,state,player)]],
+                 state);}
+            _E.Case($moduleName,
+            "between lines 12 and 17");
+         }();
+      }();
+   });
+   var log = F2(function (s,
+   state) {
+      return _U.replace([["log"
+                         ,{ctor: "::"
+                          ,_0: s
+                          ,_1: state.log}]],
+      state);
+   });
+   _elm.GameUpdate.values = {_op: _op
+                            ,log: log
+                            ,update: update
+                            ,move: move
+                            ,moveX: moveX
+                            ,moveY: moveY};
+   return _elm.GameUpdate.values;
+};Elm.GameModel = Elm.GameModel || {};
+Elm.GameModel.make = function (_elm) {
+   "use strict";
+   _elm.GameModel = _elm.GameModel || {};
+   if (_elm.GameModel.values)
+   return _elm.GameModel.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "GameModel";
+   var Basics = Elm.Basics.make(_elm);
+   var Char = Elm.Char.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var Grid = Elm.Grid.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var validLocation = F2(function (location,
+   state) {
+      return A2(Grid.inGrid,
+      location,
+      state.level);
+   });
+   var location = Grid.Coordinate;
+   var Nop = {ctor: "Nop"};
+   var Right = {ctor: "Right"};
+   var Left = {ctor: "Left"};
+   var Down = {ctor: "Down"};
+   var Up = {ctor: "Up"};
+   var handle = function (key) {
+      return function () {
+         switch (key)
+         {case 37: return Left;
+            case 38: return Up;
+            case 39: return Right;
+            case 40: return Down;}
+         return Nop;
+      }();
+   };
+   var Interface = function (a) {
+      return {_: {},info: a};
+   };
+   var $interface = function (state) {
+      return Interface(A4(Graphics.Element.container,
+      100,
+      100,
+      Graphics.Element.midTop,
+      Text.plainText("roguelike")));
+   };
+   var Acid = {ctor: "Acid"};
+   var Door = {ctor: "Door"};
+   var Wall = {ctor: "Wall"};
+   var Floor = {ctor: "Floor"};
+   var pathable = F2(function (location,
+   state) {
+      return function () {
+         var level = state.level;
+         var tile = A2(Grid.get,
+         location,
+         level);
+         return function () {
+            switch (tile.ctor)
+            {case "Just":
+               switch (tile._0.ctor)
+                 {case "Floor": return true;}
+                 return false;
+               case "Nothing": return false;}
+            _E.Case($moduleName,
+            "between lines 49 and 52");
+         }();
+      }();
+   });
+   var showTile = function (tile) {
+      return function () {
+         var c = function () {
+            switch (tile.ctor)
+            {case "Acid": return "~";
+               case "Door": return "+";
+               case "Floor": return " ";
+               case "Wall": return "#";}
+            _E.Case($moduleName,
+            "between lines 59 and 64");
+         }();
+         return Text.centered(Text.monospace(Text.toText(c)));
+      }();
+   };
+   var Player = F2(function (a,b) {
+      return {_: {}
+             ,avatar: b
+             ,location: a};
+   });
+   var player = function (elem) {
+      return A2(Player,
+      A2(Grid.Coordinate,2,2),
+      elem);
+   };
+   var State = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,level: b
+             ,log: c
+             ,player: a};
+   });
+   _elm.GameModel.values = {_op: _op
+                           ,player: player
+                           ,location: location
+                           ,handle: handle
+                           ,validLocation: validLocation
+                           ,pathable: pathable
+                           ,$interface: $interface
+                           ,showTile: showTile
+                           ,Floor: Floor
+                           ,Wall: Wall
+                           ,Door: Door
+                           ,Acid: Acid
+                           ,Up: Up
+                           ,Down: Down
+                           ,Left: Left
+                           ,Right: Right
+                           ,Nop: Nop
+                           ,State: State
+                           ,Player: Player
+                           ,Interface: Interface};
+   return _elm.GameModel.values;
+};Elm.Grid = Elm.Grid || {};
+Elm.Grid.make = function (_elm) {
+   "use strict";
+   _elm.Grid = _elm.Grid || {};
+   if (_elm.Grid.values)
+   return _elm.Grid.values;
+   var _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "Grid";
+   var Array = Elm.Array.make(_elm);
+   var Basics = Elm.Basics.make(_elm);
+   var Color = Elm.Color.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
+   var Graphics = Graphics || {};
+   Graphics.Element = Elm.Graphics.Element.make(_elm);
+   var List = Elm.List.make(_elm);
+   var Maybe = Elm.Maybe.make(_elm);
+   var Native = Native || {};
+   Native.Json = Elm.Native.Json.make(_elm);
+   var Native = Native || {};
+   Native.Ports = Elm.Native.Ports.make(_elm);
+   var Signal = Elm.Signal.make(_elm);
+   var String = Elm.String.make(_elm);
+   var Text = Elm.Text.make(_elm);
+   var Time = Elm.Time.make(_elm);
+   var _op = {};
+   var inGrid = F2(function (_v0,
+   grid) {
+      return function () {
+         return function () {
+            var $ = grid.size,
+            height = $.height,
+            width = $.width;
+            return _U.cmp(_v0.x,
+            0) < 0 ? false : _U.cmp(_v0.x,
+            width) > -1 ? false : _U.cmp(_v0.y,
+            0) < 0 ? false : _U.cmp(_v0.y,
+            height) > -1 ? false : true;
+         }();
+      }();
+   });
+   var getColumnOrFail = function (n) {
+      return function ($) {
+         return List.map(Array.getOrFail(n))(Array.toList(function (_) {
+            return _.grid;
+         }($)));
+      };
+   };
+   var getColumn = F2(function (n,
+   grid) {
+      return _U.cmp(n,
+      0) < 0 ? Maybe.Nothing : _U.cmp(n,
+      grid.size.width) > -1 ? Maybe.Nothing : Maybe.Just(getColumnOrFail(n)(grid));
+   });
+   var getColumnOrElse = F3(function ($default,
+   n,
+   grid) {
+      return function () {
+         var _v2 = A2(getColumn,
+         n,
+         grid);
+         switch (_v2.ctor)
+         {case "Just": return _v2._0;
+            case "Nothing":
+            return $default;}
+         _E.Case($moduleName,
+         "between lines 74 and 76");
+      }();
+   });
+   var getRowOrFail = function (n) {
+      return function ($) {
+         return Array.toList(Array.getOrFail(n)(function (_) {
+            return _.grid;
+         }($)));
+      };
+   };
+   var getRow = F2(function (n,
+   grid) {
+      return _U.cmp(n,
+      0) < 0 ? Maybe.Nothing : _U.cmp(n,
+      grid.size.height) > -1 ? Maybe.Nothing : Maybe.Just(getRowOrFail(n)(grid));
+   });
+   var getRowOrElse = F3(function ($default,
+   n,
+   grid) {
+      return function () {
+         var _v4 = A2(getRow,n,grid);
+         switch (_v4.ctor)
+         {case "Just": return _v4._0;
+            case "Nothing":
+            return $default;}
+         _E.Case($moduleName,
+         "between lines 59 and 61");
+      }();
+   });
+   var getOrFail = F2(function (_v6,
+   grid) {
+      return function () {
+         return function () {
+            var row = A2(Array.getOrFail,
+            _v6.y,
+            grid.grid);
+            return A2(Array.getOrFail,
+            _v6.x,
+            row);
+         }();
+      }();
+   });
+   var get = F2(function (_v8,
+   grid) {
+      return function () {
+         return function () {
+            var _v10 = A2(Array.get,
+            _v8.y,
+            grid.grid);
+            switch (_v10.ctor)
+            {case "Just":
+               return A2(Array.get,
+                 _v8.x,
+                 _v10._0);
+               case "Nothing":
+               return Maybe.Nothing;}
+            _E.Case($moduleName,
+            "between lines 33 and 35");
+         }();
+      }();
+   });
+   var getOrElse = F3(function ($default,
+   coordinate,
+   grid) {
+      return function () {
+         var _v12 = A2(get,
+         coordinate,
+         grid);
+         switch (_v12.ctor)
+         {case "Just": return _v12._0;
+            case "Nothing":
+            return $default;}
+         _E.Case($moduleName,
+         "between lines 44 and 46");
+      }();
+   });
+   var set = F3(function (_v14,
+   a,
+   grid) {
+      return function () {
+         return _U.cmp(_v14.x,
+         0) < 0 ? grid : _U.cmp(_v14.y,
+         0) < 0 ? grid : _U.cmp(_v14.x,
+         grid.size.width) > -1 ? grid : _U.cmp(_v14.y,
+         grid.size.height) > -1 ? grid : function () {
+            var row = A2(Array.getOrFail,
+            _v14.x,
+            grid.grid);
+            var row$ = A3(Array.set,
+            _v14.y,
+            a,
+            row);
+            return _U.replace([["grid"
+                               ,A3(Array.set,
+                               _v14.x,
+                               row$,
+                               grid.grid)]],
+            grid);
+         }();
+      }();
+   });
+   var toList = function ($) {
+      return List.map(Array.toList)(Array.toList(function (_) {
+         return _.grid;
+      }($)));
+   };
+   var Coordinate = F2(function (a,
+   b) {
+      return {_: {},x: a,y: b};
+   });
+   var Size = F2(function (a,b) {
+      return {_: {}
+             ,height: b
+             ,width: a};
+   });
+   var Grid = F2(function (a,b) {
+      return {_: {}
+             ,grid: a
+             ,size: b};
+   });
+   var initialize = F2(function (_v16,
+   a) {
+      return function () {
+         return A2(Grid,
+         Array.repeat(_v16.height)(Array.repeat(_v16.width)(a)),
+         _v16);
+      }();
+   });
+   var fromList = function (xs) {
+      return function () {
+         var row = function (x) {
+            return Array.fromList(x);
+         };
+         var grid = Array.fromList(A2(List.map,
+         row,
+         xs));
+         return Grid(grid)(A2(Size,
+         List.length(List.head(xs)),
+         List.length(xs)));
+      }();
+   };
+   _elm.Grid.values = {_op: _op
+                      ,initialize: initialize
+                      ,toList: toList
+                      ,fromList: fromList
+                      ,set: set
+                      ,get: get
+                      ,getOrFail: getOrFail
+                      ,getOrElse: getOrElse
+                      ,getRow: getRow
+                      ,getRowOrFail: getRowOrFail
+                      ,getRowOrElse: getRowOrElse
+                      ,getColumn: getColumn
+                      ,getColumnOrFail: getColumnOrFail
+                      ,getColumnOrElse: getColumnOrElse
+                      ,inGrid: inGrid
+                      ,Grid: Grid
+                      ,Size: Size
+                      ,Coordinate: Coordinate};
+   return _elm.Grid.values;
+};</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>

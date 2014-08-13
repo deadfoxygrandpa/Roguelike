@@ -15,14 +15,17 @@ type Player = { location : Location
 
 
 type Location = Grid.Coordinate
-type Tile = Int
+data Tile = Floor
+          | Wall
+          | Door
+          | Acid
 
 type Interface = { info : Element }
 
 data Input = Up | Down | Left | Right | Nop
 
 player : Element -> Player
-player elem = Player (Grid.Coordinate 0 0) elem
+player elem = Player (Grid.Coordinate 2 2) elem
 
 location : Int -> Int -> Location
 location = Grid.Coordinate
@@ -39,5 +42,23 @@ handle key =
 validLocation : Location -> State -> Bool
 validLocation location state = Grid.inGrid location state.level
 
+pathable : Location -> State -> Bool
+pathable location state =
+    let level = state.level
+        tile  = Grid.get location level
+    in  case tile of
+            Nothing -> False
+            Just Floor  -> True
+            Just _  -> False
+
 interface : State -> Interface
 interface state = Interface <| container 100 100 midTop (plainText "roguelike")
+
+showTile : Tile -> Element
+showTile tile =
+    let c = case tile of
+                Floor -> " "
+                Wall  -> "#"
+                Door  -> "+"
+                Acid  -> "~"
+    in  centered . monospace . toText <| c

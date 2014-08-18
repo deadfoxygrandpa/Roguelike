@@ -5,14 +5,20 @@ import Char (KeyCode)
 import Grid
 
 type State = { player : Player
+             , enemy : Enemy
              , level : Grid.Grid Tile
              , log : [String]
              }
 
 type Player = { location : Location
               , avatar : Element
+              , health : Int
               }
 
+type Enemy = { location : Location
+             , avatar : Element
+             , health : Int
+             }
 
 type Location = Grid.Coordinate
 data Tile = Floor
@@ -25,7 +31,10 @@ type Interface = { info : Element }
 data Input = Up | Down | Left | Right | Nop
 
 player : Element -> Player
-player elem = Player (Grid.Coordinate 2 2) elem
+player elem = Player (Grid.Coordinate 2 2) elem 10
+
+enemy : Element -> Enemy
+enemy elem = Enemy (Grid.Coordinate 14 4) elem 10
 
 location : Int -> Int -> Location
 location = Grid.Coordinate
@@ -52,7 +61,7 @@ pathable location state =
             Just _  -> False
 
 interface : State -> Interface
-interface state = Interface <| container 100 100 midTop (plainText "roguelike")
+interface state = Interface <| container 100 100 midTop (flow down [plainText "roguelike", plainText <| "your hp: " ++ show state.player.health])
 
 showTile : Tile -> Element
 showTile tile =

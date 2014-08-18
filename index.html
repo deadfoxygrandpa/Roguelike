@@ -36,6 +36,20 @@ Elm.Main.make = function (_elm) {
    var xscale = 15;
    var display = function (state) {
       return function () {
+         var enemy = A2(Graphics.Element.flow,
+         Graphics.Element.down,
+         _L.fromArray([A2(Graphics.Element.spacer,
+                      1,
+                      yscale * state.enemy.location.y)
+                      ,A2(Graphics.Element.flow,
+                      Graphics.Element.right,
+                      _L.fromArray([A2(Graphics.Element.spacer,
+                                   xscale * state.enemy.location.x,
+                                   1)
+                                   ,A3(Graphics.Element.container,
+                                   xscale,
+                                   yscale,
+                                   Graphics.Element.middle)(state.enemy.avatar)]))]));
          var player = A2(Graphics.Element.flow,
          Graphics.Element.down,
          _L.fromArray([A2(Graphics.Element.spacer,
@@ -68,7 +82,8 @@ Elm.Main.make = function (_elm) {
                       _L.fromArray([Graphics.Element.layers(_L.fromArray([Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
                                                                          row,
                                                                          Grid.toList(state.level)))
-                                                                         ,player]))
+                                                                         ,player
+                                                                         ,enemy]))
                                    ,Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
                                    Text.plainText,
                                    A2(List.take,
@@ -79,6 +94,7 @@ Elm.Main.make = function (_elm) {
    var inputs = A2(Signal._op["<~"],
    GameModel.handle,
    Keyboard.lastPressed);
+   var initalEnemy = GameModel.enemy(Text.centered(Text.monospace(Text.toText("e"))));
    var initialPlayer = GameModel.player(Text.centered(Text.monospace(Text.toText("@"))));
    var initialLevel = function () {
       var s = _L.fromArray(["####################"
@@ -107,8 +123,9 @@ Elm.Main.make = function (_elm) {
       },
       s));
    }();
-   var initialState = A3(GameModel.State,
+   var initialState = A4(GameModel.State,
    initialPlayer,
+   initalEnemy,
    initialLevel,
    _L.fromArray(["you enter the dungeon"]));
    var state = A3(Signal.foldp,
@@ -121,6 +138,7 @@ Elm.Main.make = function (_elm) {
    _elm.Main.values = {_op: _op
                       ,initialLevel: initialLevel
                       ,initialPlayer: initialPlayer
+                      ,initalEnemy: initalEnemy
                       ,initialState: initialState
                       ,inputs: inputs
                       ,state: state
@@ -159,6 +177,22 @@ Elm.GameUpdate.make = function (_elm) {
    var Text = Elm.Text.make(_elm);
    var Time = Elm.Time.make(_elm);
    var _op = {};
+   var attack = F2(function (dude1,
+   dude2) {
+      return function () {
+         var msg = "you hit the enemy for 2 dmg. he hit you for 1 dmg";
+         var hp2 = dude2.health - 2;
+         var hp1 = dude1.health - 1;
+         return {ctor: "_Tuple3"
+                ,_0: _U.replace([["health"
+                                 ,hp1]],
+                dude1)
+                ,_1: _U.replace([["health"
+                                 ,hp2]],
+                dude2)
+                ,_2: msg};
+      }();
+   });
    var move = F3(function (_v0,
    state,
    a) {
@@ -180,11 +214,11 @@ Elm.GameUpdate.make = function (_elm) {
                                           ,location]],
                          a);}
                     _E.Case($moduleName,
-                    "between lines 22 and 24");
+                    "between lines 30 and 32");
                  }();
               }();}
          _E.Case($moduleName,
-         "between lines 21 and 24");
+         "between lines 29 and 32");
       }();
    });
    var moveX = function (x) {
@@ -197,35 +231,6 @@ Elm.GameUpdate.make = function (_elm) {
                   ,_0: 0
                   ,_1: y});
    };
-   var update = F2(function (input,
-   state) {
-      return function () {
-         var player = state.player;
-         var location = player.location;
-         return function () {
-            switch (input.ctor)
-            {case "Down":
-               return _U.replace([["player"
-                                  ,A3(moveY,1,state,player)]],
-                 state);
-               case "Left":
-               return _U.replace([["player"
-                                  ,A3(moveX,-1,state,player)]],
-                 state);
-               case "Nop": return state;
-               case "Right":
-               return _U.replace([["player"
-                                  ,A3(moveX,1,state,player)]],
-                 state);
-               case "Up":
-               return _U.replace([["player"
-                                  ,A3(moveY,-1,state,player)]],
-                 state);}
-            _E.Case($moduleName,
-            "between lines 12 and 17");
-         }();
-      }();
-   });
    var log = F2(function (s,
    state) {
       return _U.replace([["log"
@@ -234,12 +239,110 @@ Elm.GameUpdate.make = function (_elm) {
                           ,_1: state.log}]],
       state);
    });
+   var cleanup = function (state) {
+      return function () {
+         var enemy = state.enemy;
+         var enemy$ = _U.cmp(enemy.health,
+         0) < 1 ? _U.replace([["location"
+                              ,A2(GameModel.location,0,0)]
+                             ,["avatar"
+                              ,A2(Graphics.Element.spacer,
+                              0,
+                              0)]],
+         enemy) : enemy;
+         var msg = _U.eq(enemy$.location,
+         enemy.location) ? Maybe.Nothing : Maybe.Just("the enemy died");
+         return function () {
+            switch (msg.ctor)
+            {case "Just": return A2(log,
+                 msg._0,
+                 _U.replace([["enemy",enemy$]],
+                 state));
+               case "Nothing": return state;}
+            _E.Case($moduleName,
+            "between lines 52 and 54");
+         }();
+      }();
+   };
+   var update = F2(function (input,
+   state) {
+      return function () {
+         var enemy = state.enemy;
+         var $ = {ctor: "_Tuple2"
+                 ,_0: enemy.location.x
+                 ,_1: enemy.location.y},
+         x$$ = $._0,
+         y$$ = $._1;
+         var $ = function () {
+            switch (input.ctor)
+            {case "Down":
+               return {ctor: "_Tuple2"
+                      ,_0: 0
+                      ,_1: 0 + 1};
+               case "Left":
+               return {ctor: "_Tuple2"
+                      ,_0: 0 - 1
+                      ,_1: 0};
+               case "Nop":
+               return {ctor: "_Tuple2"
+                      ,_0: 0
+                      ,_1: 0};
+               case "Right":
+               return {ctor: "_Tuple2"
+                      ,_0: 0 + 1
+                      ,_1: 0};
+               case "Up":
+               return {ctor: "_Tuple2"
+                      ,_0: 0
+                      ,_1: 0 - 1};}
+            _E.Case($moduleName,
+            "between lines 12 and 18");
+         }(),
+         x$ = $._0,
+         y$ = $._1;
+         var player = state.player;
+         var $ = player.location,
+         x = $.x,
+         y = $.y;
+         var $ = {ctor: "_Tuple2"
+                 ,_0: x + x$
+                 ,_1: y + y$},
+         x$$$ = $._0,
+         y$$$ = $._1;
+         var state$ = _U.eq({ctor: "_Tuple2"
+                            ,_0: x$$
+                            ,_1: y$$},
+         {ctor: "_Tuple2"
+         ,_0: x$$$
+         ,_1: y$$$}) ? function () {
+            var $ = A2(attack,
+            player,
+            enemy),
+            player$ = $._0,
+            enemy$ = $._1,
+            msg = $._2;
+            return A2(log,
+            msg,
+            _U.replace([["player",player$]
+                       ,["enemy",enemy$]],
+            state));
+         }() : _U.replace([["player"
+                           ,A3(move,
+                           {ctor: "_Tuple2",_0: x$,_1: y$},
+                           state,
+                           player)]],
+         state);
+         return cleanup(state$);
+      }();
+   });
    _elm.GameUpdate.values = {_op: _op
                             ,log: log
                             ,update: update
                             ,move: move
                             ,moveX: moveX
-                            ,moveY: moveY};
+                            ,moveY: moveY
+                            ,attack: attack
+                            ,cleanup: cleanup};
    return _elm.GameUpdate.values;
 };Elm.GameModel = Elm.GameModel || {};
 Elm.GameModel.make = function (_elm) {
@@ -302,7 +405,11 @@ Elm.GameModel.make = function (_elm) {
       100,
       100,
       Graphics.Element.midTop,
-      Text.plainText("roguelike")));
+      A2(Graphics.Element.flow,
+      Graphics.Element.down,
+      _L.fromArray([Text.plainText("roguelike")
+                   ,Text.plainText(_L.append("your hp: ",
+                   String.show(state.player.health)))]))));
    };
    var Acid = {ctor: "Acid"};
    var Door = {ctor: "Door"};
@@ -323,7 +430,7 @@ Elm.GameModel.make = function (_elm) {
                  return false;
                case "Nothing": return false;}
             _E.Case($moduleName,
-            "between lines 49 and 52");
+            "between lines 58 and 61");
          }();
       }();
    });
@@ -336,31 +443,52 @@ Elm.GameModel.make = function (_elm) {
                case "Floor": return " ";
                case "Wall": return "#";}
             _E.Case($moduleName,
-            "between lines 59 and 64");
+            "between lines 68 and 73");
          }();
          return Text.centered(Text.monospace(Text.toText(c)));
       }();
    };
-   var Player = F2(function (a,b) {
-      return {_: {}
-             ,avatar: b
-             ,location: a};
-   });
-   var player = function (elem) {
-      return A2(Player,
-      A2(Grid.Coordinate,2,2),
-      elem);
-   };
-   var State = F3(function (a,
+   var Enemy = F3(function (a,
    b,
    c) {
       return {_: {}
-             ,level: b
-             ,log: c
+             ,avatar: b
+             ,health: c
+             ,location: a};
+   });
+   var enemy = function (elem) {
+      return A3(Enemy,
+      A2(Grid.Coordinate,14,4),
+      elem,
+      10);
+   };
+   var Player = F3(function (a,
+   b,
+   c) {
+      return {_: {}
+             ,avatar: b
+             ,health: c
+             ,location: a};
+   });
+   var player = function (elem) {
+      return A3(Player,
+      A2(Grid.Coordinate,2,2),
+      elem,
+      10);
+   };
+   var State = F4(function (a,
+   b,
+   c,
+   d) {
+      return {_: {}
+             ,enemy: b
+             ,level: c
+             ,log: d
              ,player: a};
    });
    _elm.GameModel.values = {_op: _op
                            ,player: player
+                           ,enemy: enemy
                            ,location: location
                            ,handle: handle
                            ,validLocation: validLocation
@@ -378,6 +506,7 @@ Elm.GameModel.make = function (_elm) {
                            ,Nop: Nop
                            ,State: State
                            ,Player: Player
+                           ,Enemy: Enemy
                            ,Interface: Interface};
    return _elm.GameModel.values;
 };Elm.Grid = Elm.Grid || {};

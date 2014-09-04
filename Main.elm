@@ -7,6 +7,7 @@ import Grid
 
 import GameModel
 import GameUpdate
+import GameView
 
 initialLevel : Grid.Grid GameModel.Tile
 initialLevel =
@@ -51,5 +52,5 @@ display state =
     in  flow right [(GameModel.interface state).info, flow down [layers [flow down <| map row (Grid.toList state.level), player, enemy], flow down <| map plainText (take 5 state.log)]]
 
 main : Signal Element
-main = display <~ state
+main = GameView.display <~ state
 

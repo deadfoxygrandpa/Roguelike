@@ -70,4 +70,4 @@ showTile tile =
                 Wall  -> "#"
                 Door  -> "+"
                 Acid  -> "~"
-    in  centered . monospace . toText <| c
+    in  centered << monospace << toText <| c

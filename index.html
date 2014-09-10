@@ -5,97 +5,88 @@ Elm.Main.make = function (_elm) {
    _elm.Main = _elm.Main || {};
    if (_elm.Main.values)
    return _elm.Main.values;
-   var _N = Elm.Native,
+   var _op = {},
+   _N = Elm.Native,
    _U = _N.Utils.make(_elm),
    _L = _N.List.make(_elm),
    _A = _N.Array.make(_elm),
    _E = _N.Error.make(_elm),
-   $moduleName = "Main";
-   var Basics = Elm.Basics.make(_elm);
-   var Color = Elm.Color.make(_elm);
-   var GameModel = Elm.GameModel.make(_elm);
-   var GameUpdate = Elm.GameUpdate.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Element = Elm.Graphics.Element.make(_elm);
-   var Grid = Elm.Grid.make(_elm);
-   var Keyboard = Elm.Keyboard.make(_elm);
-   var List = Elm.List.make(_elm);
-   var Maybe = Elm.Maybe.make(_elm);
-   var Native = Native || {};
-   Native.Json = Elm.Native.Json.make(_elm);
-   var Native = Native || {};
-   Native.Ports = Elm.Native.Ports.make(_elm);
-   var Signal = Elm.Signal.make(_elm);
-   var String = Elm.String.make(_elm);
-   var Text = Elm.Text.make(_elm);
-   var Time = Elm.Time.make(_elm);
-   var _op = {};
+   $moduleName = "Main",
+   $Basics = Elm.Basics.make(_elm),
+   $GameModel = Elm.GameModel.make(_elm),
+   $GameUpdate = Elm.GameUpdate.make(_elm),
+   $GameView = Elm.GameView.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Grid = Elm.Grid.make(_elm),
+   $Keyboard = Elm.Keyboard.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Text = Elm.Text.make(_elm);
    var yscale = 20;
    var xscale = 15;
    var display = function (state) {
       return function () {
-         var enemy = A2(Graphics.Element.flow,
-         Graphics.Element.down,
-         _L.fromArray([A2(Graphics.Element.spacer,
+         var enemy = A2($Graphics$Element.flow,
+         $Graphics$Element.down,
+         _L.fromArray([A2($Graphics$Element.spacer,
                       1,
                       yscale * state.enemy.location.y)
-                      ,A2(Graphics.Element.flow,
-                      Graphics.Element.right,
-                      _L.fromArray([A2(Graphics.Element.spacer,
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([A2($Graphics$Element.spacer,
                                    xscale * state.enemy.location.x,
                                    1)
-                                   ,A3(Graphics.Element.container,
+                                   ,A3($Graphics$Element.container,
                                    xscale,
                                    yscale,
-                                   Graphics.Element.middle)(state.enemy.avatar)]))]));
-         var player = A2(Graphics.Element.flow,
-         Graphics.Element.down,
-         _L.fromArray([A2(Graphics.Element.spacer,
+                                   $Graphics$Element.middle)(state.enemy.avatar)]))]));
+         var player = A2($Graphics$Element.flow,
+         $Graphics$Element.down,
+         _L.fromArray([A2($Graphics$Element.spacer,
                       1,
                       yscale * state.player.location.y)
-                      ,A2(Graphics.Element.flow,
-                      Graphics.Element.right,
-                      _L.fromArray([A2(Graphics.Element.spacer,
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([A2($Graphics$Element.spacer,
                                    xscale * state.player.location.x,
                                    1)
-                                   ,A3(Graphics.Element.container,
+                                   ,A3($Graphics$Element.container,
                                    xscale,
                                    yscale,
-                                   Graphics.Element.middle)(state.player.avatar)]))]));
+                                   $Graphics$Element.middle)(state.player.avatar)]))]));
          var row = function (x) {
-            return Graphics.Element.flow(Graphics.Element.right)(A2(List.map,
+            return $Graphics$Element.flow($Graphics$Element.right)(A2($List.map,
             function (t) {
-               return A3(Graphics.Element.container,
+               return A3($Graphics$Element.container,
                xscale,
                yscale,
-               Graphics.Element.middle)(GameModel.showTile(t));
+               $Graphics$Element.middle)($GameModel.showTile(t));
             },
             x));
          };
-         return A2(Graphics.Element.flow,
-         Graphics.Element.right,
-         _L.fromArray([GameModel.$interface(state).info
-                      ,A2(Graphics.Element.flow,
-                      Graphics.Element.down,
-                      _L.fromArray([Graphics.Element.layers(_L.fromArray([Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
-                                                                         row,
-                                                                         Grid.toList(state.level)))
-                                                                         ,player
-                                                                         ,enemy]))
-                                   ,Graphics.Element.flow(Graphics.Element.down)(A2(List.map,
-                                   Text.plainText,
-                                   A2(List.take,
+         return A2($Graphics$Element.flow,
+         $Graphics$Element.right,
+         _L.fromArray([$GameModel.$interface(state).info
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.down,
+                      _L.fromArray([$Graphics$Element.layers(_L.fromArray([$Graphics$Element.flow($Graphics$Element.down)(A2($List.map,
+                                                                          row,
+                                                                          $Grid.toList(state.level)))
+                                                                          ,player
+                                                                          ,enemy]))
+                                   ,$Graphics$Element.flow($Graphics$Element.down)(A2($List.map,
+                                   $Text.plainText,
+                                   A2($List.take,
                                    5,
                                    state.log)))]))]));
       }();
    };
-   var inputs = A2(Signal._op["<~"],
-   GameModel.handle,
-   Keyboard.lastPressed);
-   var initalEnemy = GameModel.enemy(Text.centered(Text.monospace(Text.toText("e"))));
-   var initialPlayer = GameModel.player(Text.centered(Text.monospace(Text.toText("@"))));
+   var inputs = A2($Signal._op["<~"],
+   $GameModel.handle,
+   $Keyboard.lastPressed);
+   var initalEnemy = $GameModel.enemy($Text.centered($Text.monospace($Text.toText("e"))));
+   var initialPlayer = $GameModel.player($Text.centered($Text.monospace($Text.toText("@"))));
    var initialLevel = function () {
       var s = _L.fromArray(["####################"
                            ,"#        #         #"
@@ -108,32 +99,34 @@ Elm.Main.make = function (_elm) {
          return function () {
             switch (c + "")
             {case " ":
-               return GameModel.Floor;
-               case "#": return GameModel.Wall;
-               case "+": return GameModel.Door;
+               return $GameModel.Floor;
+               case "#":
+               return $GameModel.Wall;
+               case "+":
+               return $GameModel.Door;
                case "~":
-               return GameModel.Acid;}
+               return $GameModel.Acid;}
             _E.Case($moduleName,
-            "between lines 13 and 18");
+            "between lines 14 and 19");
          }();
       };
-      return Grid.fromList(A2(List.map,
+      return $Grid.fromList(A2($List.map,
       function (x) {
-         return List.map(toTile)(String.toList(x));
+         return $List.map(toTile)($String.toList(x));
       },
       s));
    }();
-   var initialState = A4(GameModel.State,
+   var initialState = A4($GameModel.State,
    initialPlayer,
    initalEnemy,
    initialLevel,
    _L.fromArray(["you enter the dungeon"]));
-   var state = A3(Signal.foldp,
-   GameUpdate.update,
+   var state = A3($Signal.foldp,
+   $GameUpdate.update,
    initialState,
    inputs);
-   var main = A2(Signal._op["<~"],
-   display,
+   var main = A2($Signal._op["<~"],
+   $GameView.display,
    state);
    _elm.Main.values = {_op: _op
                       ,initialLevel: initialLevel
@@ -147,36 +140,155 @@ Elm.Main.make = function (_elm) {
                       ,display: display
                       ,main: main};
    return _elm.Main.values;
+};Elm.GameView = Elm.GameView || {};
+Elm.GameView.make = function (_elm) {
+   "use strict";
+   _elm.GameView = _elm.GameView || {};
+   if (_elm.GameView.values)
+   return _elm.GameView.values;
+   var _op = {},
+   _N = Elm.Native,
+   _U = _N.Utils.make(_elm),
+   _L = _N.List.make(_elm),
+   _A = _N.Array.make(_elm),
+   _E = _N.Error.make(_elm),
+   $moduleName = "GameView",
+   $Basics = Elm.Basics.make(_elm),
+   $Color = Elm.Color.make(_elm),
+   $GameModel = Elm.GameModel.make(_elm),
+   $Graphics$Collage = Elm.Graphics.Collage.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Grid = Elm.Grid.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Text = Elm.Text.make(_elm);
+   var yScale = 20;
+   var xScale = 15;
+   var floor = $Graphics$Collage.filled($Color.black)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
+   var wall = $Graphics$Collage.filled($Color.grey)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
+   var door = $Graphics$Collage.filled($Color.purple)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
+   var acid = $Graphics$Collage.filled($Color.darkGreen)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
+   var tile = function (t) {
+      return function () {
+         switch (t.ctor)
+         {case "Acid": return acid;
+            case "Door": return door;
+            case "Floor": return floor;
+            case "Wall": return wall;}
+         _E.Case($moduleName,
+         "between lines 26 and 30");
+      }();
+   };
+   var player = $Graphics$Collage.filled($Color.red)($Graphics$Collage.circle($Basics.toFloat(xScale) / 2));
+   var enemy = $Graphics$Collage.filled($Color.green)($Graphics$Collage.circle($Basics.toFloat(xScale) / 2));
+   var display = function (state) {
+      return function () {
+         var grid = $Grid.toList(state.level);
+         var yOffset = function (n) {
+            return ($Basics.toFloat(n) - $Basics.toFloat(state.level.size.height) / 2) * $Basics.toFloat(yScale);
+         };
+         var xOffset = function (n) {
+            return ($Basics.toFloat(n) - $Basics.toFloat(state.level.size.width) / 2) * $Basics.toFloat(xScale);
+         };
+         var row = F2(function (n,
+         tiles) {
+            return $List.map(function (_v1) {
+               return function () {
+                  switch (_v1.ctor)
+                  {case "_Tuple2":
+                     return $Graphics$Collage.move({ctor: "_Tuple2"
+                                                   ,_0: xOffset(_v1._0)
+                                                   ,_1: yOffset(n)})(tile(_v1._1));}
+                  _E.Case($moduleName,
+                  "on line 43, column 40 to 78");
+               }();
+            })(A2($List.zip,
+            _L.range(0,
+            state.level.size.width - 1),
+            tiles));
+         });
+         var pl = {ctor: "_Tuple2"
+                  ,_0: xOffset(state.player.location.x)
+                  ,_1: 0 - yOffset(state.player.location.y + 1)};
+         var player$ = A2($Graphics$Collage.move,
+         pl,
+         player);
+         var el = {ctor: "_Tuple2"
+                  ,_0: xOffset(state.enemy.location.x)
+                  ,_1: 0 - yOffset(state.enemy.location.y + 1)};
+         var enemy$ = A2($Graphics$Collage.move,
+         el,
+         enemy);
+         var $ = {ctor: "_Tuple2"
+                 ,_0: state.level.size.width * xScale
+                 ,_1: state.level.size.height * yScale},
+         w = $._0,
+         h = $._1;
+         var bg = A2($Graphics$Collage.collage,
+         w,
+         h)($List.concatMap(function (_v5) {
+            return function () {
+               switch (_v5.ctor)
+               {case "_Tuple2": return A2(row,
+                    _v5._0,
+                    _v5._1);}
+               _E.Case($moduleName,
+               "on line 49, column 51 to 58");
+            }();
+         })(A2($List.zip,
+         _L.range(0,
+         state.level.size.height - 1),
+         grid)));
+         var pg = A3($Graphics$Collage.collage,
+         w,
+         h,
+         _L.fromArray([player$,enemy$]));
+         return A2($Graphics$Element.flow,
+         $Graphics$Element.down,
+         _L.fromArray([$Graphics$Element.layers(_L.fromArray([bg
+                                                             ,pg]))
+                      ,$Graphics$Element.flow($Graphics$Element.down)(A2($List.map,
+                      $Text.asText,
+                      state.log))]));
+      }();
+   };
+   _elm.GameView.values = {_op: _op
+                          ,xScale: xScale
+                          ,yScale: yScale
+                          ,floor: floor
+                          ,wall: wall
+                          ,door: door
+                          ,acid: acid
+                          ,tile: tile
+                          ,player: player
+                          ,enemy: enemy
+                          ,display: display};
+   return _elm.GameView.values;
 };Elm.GameUpdate = Elm.GameUpdate || {};
 Elm.GameUpdate.make = function (_elm) {
    "use strict";
    _elm.GameUpdate = _elm.GameUpdate || {};
    if (_elm.GameUpdate.values)
    return _elm.GameUpdate.values;
-   var _N = Elm.Native,
+   var _op = {},
+   _N = Elm.Native,
    _U = _N.Utils.make(_elm),
    _L = _N.List.make(_elm),
    _A = _N.Array.make(_elm),
    _E = _N.Error.make(_elm),
-   $moduleName = "GameUpdate";
-   var Basics = Elm.Basics.make(_elm);
-   var Color = Elm.Color.make(_elm);
-   var GameModel = Elm.GameModel.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Element = Elm.Graphics.Element.make(_elm);
-   var List = Elm.List.make(_elm);
-   var Maybe = Elm.Maybe.make(_elm);
-   var Native = Native || {};
-   Native.Json = Elm.Native.Json.make(_elm);
-   var Native = Native || {};
-   Native.Ports = Elm.Native.Ports.make(_elm);
-   var Signal = Elm.Signal.make(_elm);
-   var String = Elm.String.make(_elm);
-   var Text = Elm.Text.make(_elm);
-   var Time = Elm.Time.make(_elm);
-   var _op = {};
+   $moduleName = "GameUpdate",
+   $Basics = Elm.Basics.make(_elm),
+   $GameModel = Elm.GameModel.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm);
    var attack = F2(function (dude1,
    dude2) {
       return function () {
@@ -200,11 +312,11 @@ Elm.GameUpdate.make = function (_elm) {
          switch (_v0.ctor)
          {case "_Tuple2":
             return function () {
-                 var location = A2(GameModel.location,
+                 var location = A2($GameModel.location,
                  a.location.x + _v0._0,
                  a.location.y + _v0._1);
                  return function () {
-                    var _v4 = A2(GameModel.pathable,
+                    var _v4 = A2($GameModel.pathable,
                     location,
                     state);
                     switch (_v4)
@@ -234,9 +346,9 @@ Elm.GameUpdate.make = function (_elm) {
    var log = F2(function (s,
    state) {
       return _U.replace([["log"
-                         ,{ctor: "::"
-                          ,_0: s
-                          ,_1: state.log}]],
+                         ,A2($List._op["::"],
+                         s,
+                         state.log)]],
       state);
    });
    var cleanup = function (state) {
@@ -244,14 +356,14 @@ Elm.GameUpdate.make = function (_elm) {
          var enemy = state.enemy;
          var enemy$ = _U.cmp(enemy.health,
          0) < 1 ? _U.replace([["location"
-                              ,A2(GameModel.location,0,0)]
+                              ,A2($GameModel.location,0,0)]
                              ,["avatar"
-                              ,A2(Graphics.Element.spacer,
+                              ,A2($Graphics$Element.spacer,
                               0,
                               0)]],
          enemy) : enemy;
          var msg = _U.eq(enemy$.location,
-         enemy.location) ? Maybe.Nothing : Maybe.Just("the enemy died");
+         enemy.location) ? $Maybe.Nothing : $Maybe.Just("the enemy died");
          return function () {
             switch (msg.ctor)
             {case "Just": return A2(log,
@@ -350,38 +462,61 @@ Elm.GameModel.make = function (_elm) {
    _elm.GameModel = _elm.GameModel || {};
    if (_elm.GameModel.values)
    return _elm.GameModel.values;
-   var _N = Elm.Native,
+   var _op = {},
+   _N = Elm.Native,
    _U = _N.Utils.make(_elm),
    _L = _N.List.make(_elm),
    _A = _N.Array.make(_elm),
    _E = _N.Error.make(_elm),
-   $moduleName = "GameModel";
-   var Basics = Elm.Basics.make(_elm);
-   var Char = Elm.Char.make(_elm);
-   var Color = Elm.Color.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Element = Elm.Graphics.Element.make(_elm);
-   var Grid = Elm.Grid.make(_elm);
-   var List = Elm.List.make(_elm);
-   var Maybe = Elm.Maybe.make(_elm);
-   var Native = Native || {};
-   Native.Json = Elm.Native.Json.make(_elm);
-   var Native = Native || {};
-   Native.Ports = Elm.Native.Ports.make(_elm);
-   var Signal = Elm.Signal.make(_elm);
-   var String = Elm.String.make(_elm);
-   var Text = Elm.Text.make(_elm);
-   var Time = Elm.Time.make(_elm);
-   var _op = {};
+   $moduleName = "GameModel",
+   $Basics = Elm.Basics.make(_elm),
+   $Char = Elm.Char.make(_elm),
+   $Graphics$Element = Elm.Graphics.Element.make(_elm),
+   $Grid = Elm.Grid.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $String = Elm.String.make(_elm),
+   $Text = Elm.Text.make(_elm);
+   var showTile = function (tile) {
+      return function () {
+         var c = function () {
+            switch (tile.ctor)
+            {case "Acid": return "~";
+               case "Door": return "+";
+               case "Floor": return " ";
+               case "Wall": return "#";}
+            _E.Case($moduleName,
+            "between lines 68 and 73");
+         }();
+         return $Text.centered($Text.monospace($Text.toText(c)));
+      }();
+   };
+   var pathable = F2(function (location,
+   state) {
+      return function () {
+         var level = state.level;
+         var tile = A2($Grid.get,
+         location,
+         level);
+         return function () {
+            switch (tile.ctor)
+            {case "Just":
+               switch (tile._0.ctor)
+                 {case "Floor": return true;}
+                 return false;
+               case "Nothing": return false;}
+            _E.Case($moduleName,
+            "between lines 58 and 61");
+         }();
+      }();
+   });
    var validLocation = F2(function (location,
    state) {
-      return A2(Grid.inGrid,
+      return A2($Grid.inGrid,
       location,
       state.level);
    });
-   var location = Grid.Coordinate;
+   var location = $Grid.Coordinate;
    var Nop = {ctor: "Nop"};
    var Right = {ctor: "Right"};
    var Left = {ctor: "Left"};
@@ -401,53 +536,20 @@ Elm.GameModel.make = function (_elm) {
       return {_: {},info: a};
    };
    var $interface = function (state) {
-      return Interface(A4(Graphics.Element.container,
+      return Interface(A4($Graphics$Element.container,
       100,
       100,
-      Graphics.Element.midTop,
-      A2(Graphics.Element.flow,
-      Graphics.Element.down,
-      _L.fromArray([Text.plainText("roguelike")
-                   ,Text.plainText(_L.append("your hp: ",
-                   String.show(state.player.health)))]))));
+      $Graphics$Element.midTop,
+      A2($Graphics$Element.flow,
+      $Graphics$Element.down,
+      _L.fromArray([$Text.plainText("roguelike")
+                   ,$Text.plainText(_L.append("your hp: ",
+                   $String.show(state.player.health)))]))));
    };
    var Acid = {ctor: "Acid"};
    var Door = {ctor: "Door"};
    var Wall = {ctor: "Wall"};
    var Floor = {ctor: "Floor"};
-   var pathable = F2(function (location,
-   state) {
-      return function () {
-         var level = state.level;
-         var tile = A2(Grid.get,
-         location,
-         level);
-         return function () {
-            switch (tile.ctor)
-            {case "Just":
-               switch (tile._0.ctor)
-                 {case "Floor": return true;}
-                 return false;
-               case "Nothing": return false;}
-            _E.Case($moduleName,
-            "between lines 58 and 61");
-         }();
-      }();
-   });
-   var showTile = function (tile) {
-      return function () {
-         var c = function () {
-            switch (tile.ctor)
-            {case "Acid": return "~";
-               case "Door": return "+";
-               case "Floor": return " ";
-               case "Wall": return "#";}
-            _E.Case($moduleName,
-            "between lines 68 and 73");
-         }();
-         return Text.centered(Text.monospace(Text.toText(c)));
-      }();
-   };
    var Enemy = F3(function (a,
    b,
    c) {
@@ -458,7 +560,7 @@ Elm.GameModel.make = function (_elm) {
    });
    var enemy = function (elem) {
       return A3(Enemy,
-      A2(Grid.Coordinate,14,4),
+      A2($Grid.Coordinate,14,4),
       elem,
       10);
    };
@@ -472,7 +574,7 @@ Elm.GameModel.make = function (_elm) {
    });
    var player = function (elem) {
       return A3(Player,
-      A2(Grid.Coordinate,2,2),
+      A2($Grid.Coordinate,2,2),
       elem,
       10);
    };
@@ -487,6 +589,19 @@ Elm.GameModel.make = function (_elm) {
              ,player: a};
    });
    _elm.GameModel.values = {_op: _op
+                           ,State: State
+                           ,Player: Player
+                           ,Enemy: Enemy
+                           ,Floor: Floor
+                           ,Wall: Wall
+                           ,Door: Door
+                           ,Acid: Acid
+                           ,Interface: Interface
+                           ,Up: Up
+                           ,Down: Down
+                           ,Left: Left
+                           ,Right: Right
+                           ,Nop: Nop
                            ,player: player
                            ,enemy: enemy
                            ,location: location
@@ -494,20 +609,7 @@ Elm.GameModel.make = function (_elm) {
                            ,validLocation: validLocation
                            ,pathable: pathable
                            ,$interface: $interface
-                           ,showTile: showTile
-                           ,Floor: Floor
-                           ,Wall: Wall
-                           ,Door: Door
-                           ,Acid: Acid
-                           ,Up: Up
-                           ,Down: Down
-                           ,Left: Left
-                           ,Right: Right
-                           ,Nop: Nop
-                           ,State: State
-                           ,Player: Player
-                           ,Enemy: Enemy
-                           ,Interface: Interface};
+                           ,showTile: showTile};
    return _elm.GameModel.values;
 };Elm.Grid = Elm.Grid || {};
 Elm.Grid.make = function (_elm) {
@@ -515,30 +617,17 @@ Elm.Grid.make = function (_elm) {
    _elm.Grid = _elm.Grid || {};
    if (_elm.Grid.values)
    return _elm.Grid.values;
-   var _N = Elm.Native,
+   var _op = {},
+   _N = Elm.Native,
    _U = _N.Utils.make(_elm),
    _L = _N.List.make(_elm),
    _A = _N.Array.make(_elm),
    _E = _N.Error.make(_elm),
-   $moduleName = "Grid";
-   var Array = Elm.Array.make(_elm);
-   var Basics = Elm.Basics.make(_elm);
-   var Color = Elm.Color.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Collage = Elm.Graphics.Collage.make(_elm);
-   var Graphics = Graphics || {};
-   Graphics.Element = Elm.Graphics.Element.make(_elm);
-   var List = Elm.List.make(_elm);
-   var Maybe = Elm.Maybe.make(_elm);
-   var Native = Native || {};
-   Native.Json = Elm.Native.Json.make(_elm);
-   var Native = Native || {};
-   Native.Ports = Elm.Native.Ports.make(_elm);
-   var Signal = Elm.Signal.make(_elm);
-   var String = Elm.String.make(_elm);
-   var Text = Elm.Text.make(_elm);
-   var Time = Elm.Time.make(_elm);
-   var _op = {};
+   $moduleName = "Grid",
+   $Array = Elm.Array.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm);
    var inGrid = F2(function (_v0,
    grid) {
       return function () {
@@ -556,7 +645,7 @@ Elm.Grid.make = function (_elm) {
    });
    var getColumnOrFail = function (n) {
       return function ($) {
-         return List.map(Array.getOrFail(n))(Array.toList(function (_) {
+         return $List.map($Array.getOrFail(n))($Array.toList(function (_) {
             return _.grid;
          }($)));
       };
@@ -564,8 +653,8 @@ Elm.Grid.make = function (_elm) {
    var getColumn = F2(function (n,
    grid) {
       return _U.cmp(n,
-      0) < 0 ? Maybe.Nothing : _U.cmp(n,
-      grid.size.width) > -1 ? Maybe.Nothing : Maybe.Just(getColumnOrFail(n)(grid));
+      0) < 0 ? $Maybe.Nothing : _U.cmp(n,
+      grid.size.width) > -1 ? $Maybe.Nothing : $Maybe.Just(getColumnOrFail(n)(grid));
    });
    var getColumnOrElse = F3(function ($default,
    n,
@@ -584,7 +673,7 @@ Elm.Grid.make = function (_elm) {
    });
    var getRowOrFail = function (n) {
       return function ($) {
-         return Array.toList(Array.getOrFail(n)(function (_) {
+         return $Array.toList($Array.getOrFail(n)(function (_) {
             return _.grid;
          }($)));
       };
@@ -592,8 +681,8 @@ Elm.Grid.make = function (_elm) {
    var getRow = F2(function (n,
    grid) {
       return _U.cmp(n,
-      0) < 0 ? Maybe.Nothing : _U.cmp(n,
-      grid.size.height) > -1 ? Maybe.Nothing : Maybe.Just(getRowOrFail(n)(grid));
+      0) < 0 ? $Maybe.Nothing : _U.cmp(n,
+      grid.size.height) > -1 ? $Maybe.Nothing : $Maybe.Just(getRowOrFail(n)(grid));
    });
    var getRowOrElse = F3(function ($default,
    n,
@@ -612,10 +701,10 @@ Elm.Grid.make = function (_elm) {
    grid) {
       return function () {
          return function () {
-            var row = A2(Array.getOrFail,
+            var row = A2($Array.getOrFail,
             _v6.y,
             grid.grid);
-            return A2(Array.getOrFail,
+            return A2($Array.getOrFail,
             _v6.x,
             row);
          }();
@@ -625,16 +714,16 @@ Elm.Grid.make = function (_elm) {
    grid) {
       return function () {
          return function () {
-            var _v10 = A2(Array.get,
+            var _v10 = A2($Array.get,
             _v8.y,
             grid.grid);
             switch (_v10.ctor)
             {case "Just":
-               return A2(Array.get,
+               return A2($Array.get,
                  _v8.x,
                  _v10._0);
                case "Nothing":
-               return Maybe.Nothing;}
+               return $Maybe.Nothing;}
             _E.Case($moduleName,
             "between lines 33 and 35");
          }();
@@ -664,15 +753,15 @@ Elm.Grid.make = function (_elm) {
          0) < 0 ? grid : _U.cmp(_v14.x,
          grid.size.width) > -1 ? grid : _U.cmp(_v14.y,
          grid.size.height) > -1 ? grid : function () {
-            var row = A2(Array.getOrFail,
+            var row = A2($Array.getOrFail,
             _v14.x,
             grid.grid);
-            var row$ = A3(Array.set,
+            var row$ = A3($Array.set,
             _v14.y,
             a,
             row);
             return _U.replace([["grid"
-                               ,A3(Array.set,
+                               ,A3($Array.set,
                                _v14.x,
                                row$,
                                grid.grid)]],
@@ -681,7 +770,7 @@ Elm.Grid.make = function (_elm) {
       }();
    });
    var toList = function ($) {
-      return List.map(Array.toList)(Array.toList(function (_) {
+      return $List.map($Array.toList)($Array.toList(function (_) {
          return _.grid;
       }($)));
    };
@@ -703,24 +792,27 @@ Elm.Grid.make = function (_elm) {
    a) {
       return function () {
          return A2(Grid,
-         Array.repeat(_v16.height)(Array.repeat(_v16.width)(a)),
+         $Array.repeat(_v16.height)($Array.repeat(_v16.width)(a)),
          _v16);
       }();
    });
    var fromList = function (xs) {
       return function () {
          var row = function (x) {
-            return Array.fromList(x);
+            return $Array.fromList(x);
          };
-         var grid = Array.fromList(A2(List.map,
+         var grid = $Array.fromList(A2($List.map,
          row,
          xs));
          return Grid(grid)(A2(Size,
-         List.length(List.head(xs)),
-         List.length(xs)));
+         $List.length($List.head(xs)),
+         $List.length(xs)));
       }();
    };
    _elm.Grid.values = {_op: _op
+                      ,Grid: Grid
+                      ,Size: Size
+                      ,Coordinate: Coordinate
                       ,initialize: initialize
                       ,toList: toList
                       ,fromList: fromList
@@ -734,9 +826,6 @@ Elm.Grid.make = function (_elm) {
                       ,getColumn: getColumn
                       ,getColumnOrFail: getColumnOrFail
                       ,getColumnOrElse: getColumnOrElse
-                      ,inGrid: inGrid
-                      ,Grid: Grid
-                      ,Size: Size
-                      ,Coordinate: Coordinate};
+                      ,inGrid: inGrid};
    return _elm.Grid.values;
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>

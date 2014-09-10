@@ -41,16 +41,5 @@ inputs = GameModel.handle <~ Keyboard.lastPressed
 state : Signal GameModel.State
 state = foldp GameUpdate.update initialState inputs
 
-xscale = 15
-yscale = 20
-
-display : GameModel.State -> Element
-display state =
-    let row x = flow right <| map (\t -> container xscale yscale middle << GameModel.showTile <| t) x
-        player = flow down [spacer 1 (yscale * state.player.location.y), flow right [spacer (xscale * state.player.location.x) 1, container xscale yscale middle <| state.player.avatar]]
-        enemy = flow down [spacer 1 (yscale * state.enemy.location.y), flow right [spacer (xscale * state.enemy.location.x) 1, container xscale yscale middle <| state.enemy.avatar]]
-    in  flow right [(GameModel.interface state).info, flow down [layers [flow down <| map row (Grid.toList state.level), player, enemy], flow down <| map plainText (take 5 state.log)]]
-
 main : Signal Element
 main = GameView.display <~ state
-

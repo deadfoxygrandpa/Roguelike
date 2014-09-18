@@ -35,6 +35,14 @@ player = circle (toFloat xScale / 2) |> filled red
 enemy : Form
 enemy = circle (toFloat xScale / 2) |> filled green
 
+guy : {r| avatar : Element} -> Form
+guy r =
+    let form = r.avatar |> toForm
+        (xSize, ySize) = sizeOf r.avatar
+        x /// y = toFloat x / toFloat y
+        factor = min (xScale /// xSize) (yScale /// ySize)
+    in  scale factor form
+
 display : GameModel.State -> Element
 display state =
     let (w, h)         = (state.level.size.width * xScale, state.level.size.height * yScale)
@@ -44,9 +52,9 @@ display state =
                              makeTile (n', t) = move (xOffset n', yOffset n) <| tile t
                          in  map makeTile tiles'
         playerLocation = (xOffset state.player.location.x, 0 - yOffset (state.player.location.y + 1))
-        player'        = move playerLocation player
+        player'        = guy state.player |> move playerLocation
         enemyLocation  = (xOffset state.enemy.location.x, 0 - yOffset (state.enemy.location.y + 1))
-        enemy'         = move enemyLocation enemy
+        enemy'         = guy state.enemy |> move enemyLocation
         grid           = Grid.toList state.level
         bg             = let rows  = zip [0..state.level.size.height - 1] grid
                              forms = concatMap row rows

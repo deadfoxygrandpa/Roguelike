@@ -2,6 +2,7 @@ module Main where
 
 import Keyboard
 import String
+import Text
 
 import Grid
 
@@ -31,6 +32,7 @@ initialPlayer =
     "@"
         |> toText
         |> monospace
+        |> Text.color white
         |> centered
         |> GameModel.player
 
@@ -39,6 +41,7 @@ initalEnemy =
     "e"
         |> toText
         |> monospace
+        |> Text.color white
         |> centered
         |> GameModel.enemy
 

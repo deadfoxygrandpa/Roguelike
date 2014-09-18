@@ -40,7 +40,7 @@ display state =
     let (w, h)         = (state.level.size.width * xScale, state.level.size.height * yScale)
         xOffset n      = ((toFloat n) - (toFloat state.level.size.width) / 2) * (toFloat xScale)
         yOffset n      = ((toFloat n) - (toFloat state.level.size.height) / 2) * (toFloat yScale)
-        row n tiles    = let tiles' = zip [0..state.level.size.width - 1] tiles
+        row (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
                              makeTile (n', t) = move (xOffset n', yOffset n) <| tile t
                          in  map makeTile tiles'
         playerLocation = (xOffset state.player.location.x, 0 - yOffset (state.player.location.y + 1))
@@ -48,7 +48,9 @@ display state =
         enemyLocation  = (xOffset state.enemy.location.x, 0 - yOffset (state.enemy.location.y + 1))
         enemy'         = move enemyLocation enemy
         grid           = Grid.toList state.level
-        bg             = collage (w + xScale) (h + yScale) <|(concatMap (\(n, t) -> row n t) <| zip [0..state.level.size.height - 1] grid)
+        bg             = let rows  = zip [0..state.level.size.height - 1] grid
+                             forms = concatMap row rows
+                         in  collage (w + xScale) (h + yScale) forms
         pg             = collage (w + xScale) (h + yScale) [player', enemy']
     in  flow down [ layers [bg, pg]
                   , flow down <| map (toText >> monospace >> centered) state.log

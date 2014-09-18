@@ -27,10 +27,20 @@ initialLevel =
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
 initialPlayer : GameModel.Player
-initialPlayer = GameModel.player << centered << monospace << toText <| "@"
+initialPlayer =
+    "@"
+        |> toText
+        |> monospace
+        |> centered
+        |> GameModel.player
 
 initalEnemy : GameModel.Enemy
-initalEnemy = GameModel.enemy << centered << monospace << toText <| "e"
+initalEnemy =
+    "e"
+        |> toText
+        |> monospace
+        |> centered
+        |> GameModel.enemy
 
 initialState : GameModel.State
 initialState = GameModel.State initialPlayer initalEnemy initialLevel ["you enter the dungeon"]

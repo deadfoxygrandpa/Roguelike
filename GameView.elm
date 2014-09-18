@@ -10,16 +10,16 @@ yScale : Int
 yScale = 20
 
 floor : Form
-floor = filled black <| rect (toFloat xScale) (toFloat yScale)
+floor = rect (toFloat xScale) (toFloat yScale) |> filled black
 
 wall : Form
-wall = filled grey <| rect (toFloat xScale) (toFloat yScale)
+wall = rect (toFloat xScale) (toFloat yScale) |> filled grey
 
 door : Form
-door = filled purple <| rect (toFloat xScale) (toFloat yScale)
+door = rect (toFloat xScale) (toFloat yScale) |> filled purple
 
 acid : Form
-acid = filled darkGreen <| rect (toFloat xScale) (toFloat yScale)
+acid = rect (toFloat xScale) (toFloat yScale) |> filled darkGreen
 
 tile : GameModel.Tile -> Form
 tile t =
@@ -30,10 +30,10 @@ tile t =
         GameModel.Acid  -> acid
 
 player : Form
-player = filled red <| circle (toFloat xScale / 2)
+player = circle (toFloat xScale / 2) |> filled red
 
 enemy : Form
-enemy = filled green <| circle (toFloat xScale / 2)
+enemy = circle (toFloat xScale / 2) |> filled green
 
 display : GameModel.State -> Element
 display state =

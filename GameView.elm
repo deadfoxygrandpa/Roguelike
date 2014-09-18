@@ -1,5 +1,7 @@
 module GameView where
 
+import Text
+
 import GameModel
 import Grid
 
@@ -10,10 +12,14 @@ yScale : Int
 yScale = 20
 
 floor : Form
-floor = rect (toFloat xScale) (toFloat yScale) |> filled black
+floor = group [ rect (toFloat xScale) (toFloat yScale) |> filled black
+              , guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} -- rect (toFloat xScale) (toFloat yScale) |> filled black
+              ]
 
 wall : Form
-wall = rect (toFloat xScale) (toFloat yScale) |> filled grey
+wall = group [ rect (toFloat xScale) (toFloat yScale) |> filled grey
+             , guy {avatar = "#" |> toText |> monospace |> Text.color white |> centered}
+             ]
 
 door : Form
 door = rect (toFloat xScale) (toFloat yScale) |> filled purple

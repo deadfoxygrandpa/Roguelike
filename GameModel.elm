@@ -6,7 +6,7 @@ import Debug
 import Grid
 
 type State = { player : Player
-             , enemy : Enemy
+             , enemies : [Enemy]
              , level : Grid.Grid Tile
              , explored : Grid.Grid Bool
              , log : [String]

@@ -73,10 +73,9 @@ display state =
         fogRow (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
                                 makeTile (n', t) = move (xOffset n', yOffset n) <| fogT t
                             in  map makeTile tiles'
-        playerLocation = (xOffset state.player.location.x, 0 - yOffset (state.player.location.y + 1))
-        player'        = guy state.player |> move playerLocation
-        enemyLocation  = (xOffset state.enemy.location.x, 0 - yOffset (state.enemy.location.y + 1))
-        enemy'         = guy state.enemy |> move enemyLocation
+        location r     = (xOffset r.location.x, 0 - yOffset (r.location.y + 1))
+        player'        = guy state.player |> move (location state.player)
+        enemy'         = group <| map (\enemy -> guy enemy |> move (location enemy)) state.enemies
         grid           = Grid.toList state.level
         bg             = let rows  = zip (reverse [0..state.level.size.height - 1]) grid
                              forms = concatMap row rows

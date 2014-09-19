@@ -20,10 +20,10 @@ update input state =
                         GameModel.Right -> (0 + 1, 0    )
                         GameModel.Nop   -> (0    , 0    )
         (x''', y''') = (x + x', y + y')
-        enemy = state.enemy
+        enemy = head state.enemies
         (x'', y'') = (enemy.location.x, enemy.location.y)
         state' =  if | (x'', y'') == (x''', y''') -> let (player', enemy', msg) = attack player enemy
-                                                     in  log msg {state| player <- player', enemy <- enemy'}
+                                                     in  log msg {state| player <- player', enemies <- enemy' :: tail state.enemies}
                      | otherwise                  -> {state| player <- move (x', y') state player}
     in  state' |> reveal |> cleanup
 
@@ -50,13 +50,14 @@ attack dude1 dude2 =
 
 cleanup : GameModel.State -> GameModel.State
 cleanup state =
-    let enemy = state.enemy
-        enemy' = if enemy.health <= 0 then {enemy| location <- GameModel.location 0 0, avatar <- spacer 0 0} else enemy
-        msg = if enemy'.location == enemy.location then Nothing else (Just "the enemy died")
+    let enemies' = filter alive (Debug.watch "enemies" state.enemies)
+        alive enemy = enemy.health > 0
+        msg = if length enemies' == length state.enemies then Nothing else (Just "the enemy died")
     in  case msg of
             Nothing -> state
-            Just m  -> log m {state| enemy <- enemy'}
+            Just m  -> log m {state| enemies <- enemies'}
 
+-- Right now this just reveals a box around the player
 reveal : GameModel.State -> GameModel.State
 reveal state =
     let {x, y} = state.player.location

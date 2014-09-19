@@ -24,9 +24,9 @@ set {x, y} a grid =
        | y < 0 -> grid
        | x >= grid.size.width  -> grid
        | y >= grid.size.height -> grid
-       | otherwise -> let row = Array.getOrFail y grid.grid
-                          row' = Array.set x a row
-                      in  {grid | grid <- Array.set y row' grid.grid}
+       | otherwise -> let row = Array.getOrFail x grid.grid
+                          row' = Array.set y a row
+                      in  {grid | grid <- Array.set x row' grid.grid}
 
 get : Coordinate -> Grid a -> Maybe a
 get {x, y} grid =

@@ -1,0 +1,12 @@
+{
+    "version": "0.1",
+    "summary": "Chimera",
+    "description": "A genetic roguelike",
+    "license": "MIT",
+    "exposed-modules": [],
+    "elm-version": "0.13",
+    "dependencies": {
+        "jcollard/generator": "0.3"
+    },
+    "repository": "https://github.com/deadfoxygrandpa/Roguelike.git"
+}

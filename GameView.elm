@@ -1,6 +1,7 @@
 module GameView where
 
 import Text
+import Debug
 
 import GameModel
 import Grid
@@ -27,6 +28,12 @@ door = rect (toFloat xScale) (toFloat yScale) |> filled purple
 acid : Form
 acid = rect (toFloat xScale) (toFloat yScale) |> filled darkGreen
 
+fog : Form
+fog = rect (toFloat xScale) (toFloat yScale) |> filled (rgba 0 0 0 1)
+
+noFog : Form
+noFog = rect (toFloat xScale) (toFloat yScale) |> filled (rgba 0 0 0 0)
+
 tile : GameModel.Tile -> Form
 tile t =
     case t of
@@ -34,6 +41,12 @@ tile t =
         GameModel.Wall  -> wall
         GameModel.Door  -> door
         GameModel.Acid  -> acid
+
+fogT : Bool -> Form
+fogT bool =
+    case bool of
+        True -> noFog
+        False -> fog
 
 player : Form
 player = circle (toFloat xScale / 2) |> filled red
@@ -57,15 +70,21 @@ display state =
         row (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
                              makeTile (n', t) = move (xOffset n', yOffset n) <| tile t
                          in  map makeTile tiles'
+        fogRow (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
+                                makeTile (n', t) = move (xOffset n', yOffset n) <| fogT t
+                            in  map makeTile tiles'
         playerLocation = (xOffset state.player.location.x, 0 - yOffset (state.player.location.y + 1))
         player'        = guy state.player |> move playerLocation
         enemyLocation  = (xOffset state.enemy.location.x, 0 - yOffset (state.enemy.location.y + 1))
         enemy'         = guy state.enemy |> move enemyLocation
         grid           = Grid.toList state.level
-        bg             = let rows  = zip [0..state.level.size.height - 1] grid
+        bg             = let rows  = zip (reverse [0..state.level.size.height - 1]) grid
                              forms = concatMap row rows
                          in  collage (w + xScale) (h + yScale) forms
         pg             = collage (w + xScale) (h + yScale) [player', enemy']
-    in  flow down [ layers [bg, pg]
+        fogger         = let rows  = zip (reverse [0..state.level.size.height - 1]) (Grid.toList state.explored)
+                             forms = concatMap fogRow rows
+                         in  collage (w + xScale) (h + yScale) forms
+    in  flow down [ layers [bg, pg, fogger]
                   , flow down <| map (toText >> monospace >> centered) state.log
                   ]

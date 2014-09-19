@@ -1,5 +1,9 @@
 module GameUpdate where
 
+import Debug
+
+import Grid
+
 import GameModel
 
 log : String -> GameModel.State -> GameModel.State
@@ -21,7 +25,7 @@ update input state =
         state' =  if | (x'', y'') == (x''', y''') -> let (player', enemy', msg) = attack player enemy
                                                      in  log msg {state| player <- player', enemy <- enemy'}
                      | otherwise                  -> {state| player <- move (x', y') state player}
-    in  cleanup state'
+    in  state' |> reveal |> cleanup
 
 
 move : (Int, Int) -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
@@ -52,3 +56,14 @@ cleanup state =
     in  case msg of
             Nothing -> state
             Just m  -> log m {state| enemy <- enemy'}
+
+reveal : GameModel.State -> GameModel.State
+reveal state =
+    let {x, y} = state.player.location
+        box    = map (\(a, b) -> GameModel.location a b) [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1)
+                                                         , (x - 1, y),     (x, y),     (x + 1, y)
+                                                         , (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)
+                                                         ]
+        explored' = foldl (\l explored -> Grid.set (Debug.watch "l" l) True explored) state.explored box
+    in {state| explored <- explored'}
+

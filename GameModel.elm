@@ -1,12 +1,14 @@
 module GameModel where
 
 import Char (KeyCode)
+import Debug
 
 import Grid
 
 type State = { player : Player
              , enemy : Enemy
              , level : Grid.Grid Tile
+             , explored : Grid.Grid Bool
              , log : [String]
              }
 
@@ -55,6 +57,7 @@ pathable : Location -> State -> Bool
 pathable location state =
     let level = state.level
         tile  = Grid.get location level
+        idk = Debug.watch "to the right" <| Grid.get (Grid.Coordinate (location.x + 1) location.y) level
     in  case tile of
             Nothing -> False
             Just Floor  -> True

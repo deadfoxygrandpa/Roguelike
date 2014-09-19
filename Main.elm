@@ -27,6 +27,11 @@ initialLevel =
             ]
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
+initialExplored : Grid.Grid Bool
+initialExplored =
+    let grid = Grid.toList initialLevel
+    in  map (\row -> map (\_ -> False) row) grid |> Grid.fromList
+
 initialPlayer : GameModel.Player
 initialPlayer =
     "@"
@@ -46,7 +51,7 @@ initalEnemy =
         |> GameModel.enemy
 
 initialState : GameModel.State
-initialState = GameModel.State initialPlayer initalEnemy initialLevel ["you enter the dungeon"]
+initialState = GameUpdate.reveal <| GameModel.State initialPlayer initalEnemy initialLevel initialExplored ["you enter the dungeon"]
 
 inputs : Signal GameModel.Input
 inputs = GameModel.handle <~ Keyboard.lastPressed

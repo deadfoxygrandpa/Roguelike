@@ -15,7 +15,7 @@ toList = map Array.toList << Array.toList << .grid
 fromList : [[a]] -> Grid a
 fromList xs =
     let row x = Array.fromList x
-        grid = Array.fromList <| map row (reverse xs)
+        grid = Array.fromList <| map row xs
     in  Grid grid <| Size (length << head <| xs) (length xs)
 
 set : Coordinate -> a -> Grid a -> Grid a

@@ -67,8 +67,10 @@ guy r visibility =
                              in  scale factor form
         _                 -> noForm
 
-display : GameModel.State -> Element
-display state =
+text = toText >> monospace >> Text.color white >> centered
+
+mainScreen : GameModel.State -> Element
+mainScreen state =
     let (w, h)         = (state.level.size.width * xScale, state.level.size.height * yScale)
         xOffset n      = ((toFloat n) - (toFloat state.level.size.width) / 2) * (toFloat xScale)
         yOffset n      = ((toFloat n) - (toFloat state.level.size.height) / 2) * (toFloat yScale)
@@ -90,5 +92,16 @@ display state =
                              forms = concatMap fogRow rows
                          in  collage (w + xScale) (h + yScale) forms
     in  flow down [ layers [bg, pg, fogger]
-                  , flow down <| map (toText >> monospace >> centered) state.log
+                  , (flow down <| map text (take 3 state.log))
                   ]
+
+sidebar : GameModel.State -> Element
+sidebar state =
+    let x = 5
+        bar = flow down [ flow right [state.player.avatar, text ": You, Level ", text <| show state.player.level]
+                        , flow right [text "Health: ", text <| show state.player.health]
+                        ]
+    in  container (widthOf bar + 20) 300 midTop bar
+
+display : GameModel.State -> Element
+display state = flow right [sidebar state, mainScreen state] |> color black

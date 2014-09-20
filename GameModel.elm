@@ -7,7 +7,7 @@ import Grid
 type State = { player : Player
              , enemies : [Enemy]
              , level : Grid.Grid Tile
-             , explored : Grid.Grid Bool
+             , explored : Grid.Grid Visibility
              , log : [String]
              }
 
@@ -26,6 +26,9 @@ data Tile = Floor
           | Wall
           | Door
           | Acid
+data Visibility = Visible
+                | Unexplored
+                | Explored
 
 type Interface = { info : Element }
 
@@ -72,3 +75,14 @@ showTile tile =
                 Door  -> "+"
                 Acid  -> "~"
     in  centered << monospace << toText <| c
+
+visible : State -> [Location]
+visible state =
+    let {x, y} = state.player.location
+    in  map (\(a, b) -> location a b) [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1)
+                                      , (x - 1, y),     (x, y),     (x + 1, y)
+                                      , (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)
+                                      ]
+
+visibility : State -> Location -> Visibility
+visibility state location = Grid.getOrElse Unexplored location state.explored

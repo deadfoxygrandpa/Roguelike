@@ -1,5 +1,6 @@
 module Grid where
 
+import List
 import Array
 
 type Grid a = { grid : Array.Array (Array.Array a), size : Size }
@@ -10,12 +11,12 @@ initialize : Size -> a -> Grid a
 initialize ({width, height} as size) a = Grid (Array.repeat height << Array.repeat width <| a) size
 
 toList : Grid a -> [[a]]
-toList = map Array.toList << Array.toList << .grid
+toList = List.map Array.toList << Array.toList << .grid
 
 fromList : [[a]] -> Grid a
 fromList xs =
     let row x = Array.fromList x
-        grid = Array.fromList <| map row xs
+        grid = Array.fromList <| List.map row xs
     in  Grid grid <| Size (length << head <| xs) (length xs)
 
 set : Coordinate -> a -> Grid a -> Grid a
@@ -67,7 +68,7 @@ getColumn n grid =
        | otherwise            -> Just << getColumnOrFail n <| grid
 
 getColumnOrFail : Int -> Grid a -> [a]
-getColumnOrFail n = map (Array.getOrFail n) << Array.toList << .grid
+getColumnOrFail n = List.map (Array.getOrFail n) << Array.toList << .grid
 
 getColumnOrElse : [a] -> Int -> Grid a -> [a]
 getColumnOrElse default n grid =
@@ -83,3 +84,8 @@ inGrid {x, y} grid =
            | y < 0       -> False
            | y >= height -> False
            | otherwise   -> True
+
+map : (a -> b) -> Grid a -> Grid b
+map f grid =
+    let grid' = Array.map (\row -> Array.map f row) grid.grid
+    in  {grid| grid <- grid'}

@@ -11,14 +11,17 @@ xScale = 15
 yScale : Int
 yScale = 20
 
+noForm : Form
+noForm = toForm empty
+
 floor : Form
 floor = group [ rect (toFloat xScale) (toFloat yScale) |> filled black
-              , guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} -- rect (toFloat xScale) (toFloat yScale) |> filled black
+              , guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
               ]
 
 wall : Form
 wall = group [ rect (toFloat xScale) (toFloat yScale) |> filled grey
-             , guy {avatar = "#" |> toText |> monospace |> Text.color white |> centered}
+             , guy {avatar = "#" |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
              ]
 
 door : Form
@@ -30,8 +33,8 @@ acid = rect (toFloat xScale) (toFloat yScale) |> filled darkGreen
 fog : Form
 fog = rect (toFloat xScale) (toFloat yScale) |> filled (rgba 0 0 0 1)
 
-noFog : Form
-noFog = rect (toFloat xScale) (toFloat yScale) |> filled (rgba 0 0 0 0)
+halfFog : Form
+halfFog = rect (toFloat xScale) (toFloat yScale) |> filled (rgba 0 0 0 0.7)
 
 tile : GameModel.Tile -> Form
 tile t =
@@ -41,11 +44,12 @@ tile t =
         GameModel.Door  -> door
         GameModel.Acid  -> acid
 
-fogT : Bool -> Form
-fogT bool =
-    case bool of
-        True -> noFog
-        False -> fog
+fogT : GameModel.Visibility -> Form
+fogT visibility =
+    case visibility of
+        GameModel.Visible  -> noForm
+        GameModel.Explored -> halfFog
+        GameModel.Unexplored -> fog
 
 player : Form
 player = circle (toFloat xScale / 2) |> filled red
@@ -53,13 +57,15 @@ player = circle (toFloat xScale / 2) |> filled red
 enemy : Form
 enemy = circle (toFloat xScale / 2) |> filled green
 
-guy : {r| avatar : Element} -> Form
-guy r =
-    let form = r.avatar |> toForm
-        (xSize, ySize) = sizeOf r.avatar
-        x /// y = toFloat x / toFloat y
-        factor = min (xScale /// xSize) (yScale /// ySize)
-    in  scale factor form
+guy : {r| avatar : Element} -> GameModel.Visibility -> Form
+guy r visibility =
+    case visibility of
+        GameModel.Visible -> let form = r.avatar |> toForm
+                                 (xSize, ySize) = sizeOf r.avatar
+                                 x /// y = toFloat x / toFloat y
+                                 factor = min (xScale /// xSize) (yScale /// ySize)
+                             in  scale factor form
+        _                 -> noForm
 
 display : GameModel.State -> Element
 display state =
@@ -73,8 +79,8 @@ display state =
                                 makeTile (n', t) = move (xOffset n', yOffset n) <| fogT t
                             in  map makeTile tiles'
         location r     = (xOffset r.location.x, 0 - yOffset (r.location.y + 1))
-        player'        = guy state.player |> move (location state.player)
-        enemy'         = group <| map (\enemy -> guy enemy |> move (location enemy)) state.enemies
+        player'        = guy state.player GameModel.Visible |> move (location state.player)
+        enemy'         = group <| map (\enemy -> guy enemy (GameModel.visibility state enemy.location) |> move (location enemy)) state.enemies
         grid           = Grid.toList state.level
         bg             = let rows  = zip (reverse [0..state.level.size.height - 1]) grid
                              forms = concatMap row rows

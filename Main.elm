@@ -27,10 +27,10 @@ initialLevel =
             ]
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
-initialExplored : Grid.Grid Bool
+initialExplored : Grid.Grid GameModel.Visibility
 initialExplored =
     let grid = Grid.toList initialLevel
-    in  map (\row -> map (\_ -> False) row) grid |> Grid.fromList
+    in  map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
 
 initialPlayer : GameModel.Player
 initialPlayer =

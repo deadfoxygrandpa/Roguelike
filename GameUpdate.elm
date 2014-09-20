@@ -61,11 +61,6 @@ cleanup state =
 -- Right now this just reveals a box around the player
 reveal : GameModel.State -> GameModel.State
 reveal state =
-    let {x, y} = state.player.location
-        box    = map (\(a, b) -> GameModel.location a b) [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1)
-                                                         , (x - 1, y),     (x, y),     (x + 1, y)
-                                                         , (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)
-                                                         ]
-        explored' = foldl (\l explored -> Grid.set l True explored) state.explored box
+    let explored  = Grid.map (\t -> if t == GameModel.Visible then GameModel.Explored else t) state.explored
+        explored' = foldl (\l explored -> Grid.set l GameModel.Visible explored) explored (GameModel.visible state)
     in {state| explored <- explored'}
-

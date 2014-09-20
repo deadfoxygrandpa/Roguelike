@@ -20,11 +20,14 @@ update input state =
                         GameModel.Right -> (0 + 1, 0    )
                         GameModel.Nop   -> (0    , 0    )
         (x''', y''') = (x + x', y + y')
-        enemy = head state.enemies
-        (x'', y'') = (enemy.location.x, enemy.location.y)
-        state' =  if | (x'', y'') == (x''', y''') -> let (player', enemy', msg) = attack player enemy
-                                                     in  log msg {state| player <- player', enemies <- enemy' :: tail state.enemies}
-                     | otherwise                  -> {state| player <- move (x', y') state player}
+        enemy = case filter (\enemy -> enemy.location == GameModel.location x''' y''') state.enemies of
+                    (enemy::es) -> Just enemy
+                    [enemy]     -> Just enemy
+                    []          -> Nothing
+        state' =  case enemy of
+                    Just enemy -> let (player', enemy', msg) = attack player enemy
+                                  in  log msg {state| player <- player', enemies <- enemy' :: tail state.enemies}
+                    Nothing    -> {state| player <- move (x', y') state player}
     in  state' |> reveal |> cleanup
 
 

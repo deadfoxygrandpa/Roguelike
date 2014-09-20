@@ -10,6 +10,9 @@ import GameModel
 import GameUpdate
 import GameView
 
+port title : String
+port title = "Chimera"
+
 initialLevel : Grid.Grid GameModel.Tile
 initialLevel =
     let toTile c = case c of

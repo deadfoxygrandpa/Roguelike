@@ -5,6 +5,8 @@ import String
 import Text
 
 import Grid
+import Generator
+import Generator.Standard
 
 import GameModel
 import GameUpdate
@@ -12,6 +14,12 @@ import GameView
 
 port title : String
 port title = "Chimera"
+
+seed : Int
+seed = 2014
+
+gen : Generator.Generator Generator.Standard.Standard
+gen = Generator.Standard.generator seed
 
 initialLevel : Grid.Grid GameModel.Tile
 initialLevel =
@@ -54,7 +62,7 @@ initalEnemy =
         |> GameModel.enemy
 
 initialState : GameModel.State
-initialState = GameUpdate.reveal <| GameModel.State initialPlayer [initalEnemy] initialLevel initialExplored ["you enter the dungeon"]
+initialState = GameUpdate.reveal <| GameModel.State initialPlayer [initalEnemy] initialLevel initialExplored ["you enter the dungeon"] gen
 
 inputs : Signal GameModel.Input
 inputs = GameModel.handle <~ Keyboard.lastPressed

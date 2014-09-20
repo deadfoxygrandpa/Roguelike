@@ -3,12 +3,15 @@ module GameModel where
 import Char (KeyCode)
 
 import Grid
+import Generator
+import Generator.Standard
 
 type State = { player : Player
              , enemies : [Enemy]
              , level : Grid.Grid Tile
              , explored : Grid.Grid Visibility
              , log : [String]
+             , generator : Generator.Generator Generator.Standard.Standard
              }
 
 type Player = { location : Location

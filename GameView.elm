@@ -1,7 +1,6 @@
 module GameView where
 
 import Text
-import Debug
 
 import GameModel
 import Grid

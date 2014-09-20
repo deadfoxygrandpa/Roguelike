@@ -1,7 +1,5 @@
 module GameUpdate where
 
-import Debug
-
 import Grid
 
 import GameModel
@@ -19,8 +17,8 @@ update input state =
                         GameModel.Left  -> (0 - 1, 0    )
                         GameModel.Right -> (0 + 1, 0    )
                         GameModel.Nop   -> (0    , 0    )
-        (x''', y''') = (x + x', y + y')
-        enemy = case filter (\enemy -> enemy.location == GameModel.location x''' y''') state.enemies of
+        (x'', y'') = (x + x', y + y')
+        enemy = case filter (\enemy -> enemy.location == GameModel.location x'' y'') state.enemies of
                     (enemy::es) -> Just enemy
                     [enemy]     -> Just enemy
                     []          -> Nothing
@@ -53,7 +51,7 @@ attack dude1 dude2 =
 
 cleanup : GameModel.State -> GameModel.State
 cleanup state =
-    let enemies' = filter alive (Debug.watch "enemies" state.enemies)
+    let enemies' = filter alive state.enemies
         alive enemy = enemy.health > 0
         msg = if length enemies' == length state.enemies then Nothing else (Just "the enemy died")
     in  case msg of
@@ -68,6 +66,6 @@ reveal state =
                                                          , (x - 1, y),     (x, y),     (x + 1, y)
                                                          , (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)
                                                          ]
-        explored' = foldl (\l explored -> Grid.set (Debug.watch "l" l) True explored) state.explored box
+        explored' = foldl (\l explored -> Grid.set l True explored) state.explored box
     in {state| explored <- explored'}
 

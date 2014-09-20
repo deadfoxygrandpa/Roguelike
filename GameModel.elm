@@ -34,8 +34,6 @@ data Visibility = Visible
                 | Unexplored
                 | Explored
 
-type Interface = { info : Element }
-
 data Input = Up | Down | Left | Right | Nop
 
 type Random = Generator.Generator Generator.Standard.Standard
@@ -69,9 +67,6 @@ pathable location state =
             Nothing -> False
             Just Floor  -> True
             Just _  -> False
-
-interface : State -> Interface
-interface state = Interface <| container 100 100 midTop (flow down [plainText "roguelike", plainText <| "your hp: " ++ show state.player.health])
 
 showTile : Tile -> Element
 showTile tile =

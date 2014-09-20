@@ -62,7 +62,7 @@ guy r visibility =
     case visibility of
         GameModel.Visible -> let form = r.avatar |> toForm
                                  (xSize, ySize) = sizeOf r.avatar
-                                 x /// y = toFloat x / toFloat y
+                                 x /// y = toFloat x / toFloat y -- This is a convenience function to divide two ints
                                  factor = min (xScale /// xSize) (yScale /// ySize)
                              in  scale factor form
         _                 -> noForm
@@ -72,25 +72,35 @@ text = toText >> monospace >> Text.color white >> centered
 mainScreen : GameModel.State -> Element
 mainScreen state =
     let (w, h)         = (state.level.size.width * xScale, state.level.size.height * yScale)
+
+        xOffset : Int -> Float
         xOffset n      = ((toFloat n) - (toFloat state.level.size.width) / 2) * (toFloat xScale)
+
+        yOffset : Int -> Float
         yOffset n      = ((toFloat n) - (toFloat state.level.size.height) / 2) * (toFloat yScale)
-        row (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
-                             makeTile (n', t) = move (xOffset n', yOffset n) <| tile t
-                         in  map makeTile tiles'
-        fogRow (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
-                                makeTile (n', t) = move (xOffset n', yOffset n) <| fogT t
-                            in  map makeTile tiles'
+
+        location : {r| location : GameModel.Location} -> (Float, Float)
         location r     = (xOffset r.location.x, 0 - yOffset (r.location.y + 1))
+
+        mkLayer : [[a]] -> ((Int, [a]) -> [Form]) -> Element
+        mkLayer grid mapRow =
+                         let rows  = zip (reverse [0..state.level.size.height - 1]) grid
+                             forms = concatMap mapRow rows
+                         in  collage (w + xScale) (h + yScale) forms
+
+        row : (a -> Form) -> (Int, [a]) -> [Form]
+        row mkTile (n, tiles) = let tiles' = zip [0..state.level.size.width - 1] tiles
+                                    makeTile (n', t) = move (xOffset n', yOffset n) <| mkTile t
+                                in  map makeTile tiles'
+
         player'        = guy state.player GameModel.Visible |> move (location state.player)
-        enemy'         = group <| map (\enemy -> guy enemy (GameModel.visibility state enemy.location) |> move (location enemy)) state.enemies
+        enemy'         = let mkEnemy enemy = guy enemy (GameModel.visibility state enemy.location)
+                                                |> move (location enemy)
+                         in  group <| map mkEnemy state.enemies
         grid           = Grid.toList state.level
-        bg             = let rows  = zip (reverse [0..state.level.size.height - 1]) grid
-                             forms = concatMap row rows
-                         in  collage (w + xScale) (h + yScale) forms
+        bg             = mkLayer grid (row tile)
         pg             = collage (w + xScale) (h + yScale) [player', enemy']
-        fogger         = let rows  = zip (reverse [0..state.level.size.height - 1]) (Grid.toList state.explored)
-                             forms = concatMap fogRow rows
-                         in  collage (w + xScale) (h + yScale) forms
+        fogger         = mkLayer (Grid.toList state.explored) (row fogT)
     in  flow down [ layers [bg, pg, fogger]
                   , (flow down <| map text (take 3 state.log))
                   ]

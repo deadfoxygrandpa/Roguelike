@@ -62,7 +62,14 @@ initalEnemy =
         |> GameModel.enemy
 
 initialState : GameModel.State
-initialState = GameUpdate.reveal <| GameModel.State initialPlayer [initalEnemy] initialLevel initialExplored ["you enter the dungeon"] gen
+initialState = GameModel.State
+                    initialPlayer
+                    [initalEnemy]
+                    initialLevel
+                    initialExplored
+                    ["you enter the dungeon"]
+                    gen
+                        |> GameUpdate.reveal
 
 inputs : Signal GameModel.Input
 inputs = GameModel.handle <~ Keyboard.lastPressed

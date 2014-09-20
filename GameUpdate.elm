@@ -25,7 +25,10 @@ update input state =
                     []          -> Nothing
         state' =  case enemy of
                     Just enemy -> let (player', enemy', msg, gen) = attack player enemy state.generator
-                                  in  log msg {state| player <- player', enemies <- enemy' :: tail state.enemies, generator <- gen}
+                                  in  log msg { state| player <- player'
+                                                     , enemies <- enemy' :: tail state.enemies
+                                                     , generator <- gen
+                                              }
                     Nothing    -> {state| player <- move (x', y') state player}
     in  state' |> reveal |> cleanup
 
@@ -43,7 +46,10 @@ moveX x = move (x, 0)
 moveY : Int -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
 moveY y = move (0, y)
 
-attack : {a| health : Int} -> {b| health : Int} -> GameModel.Random -> ({a| health : Int}, {b| health : Int}, String, GameModel.Random)
+attack : {a| health : Int}
+      -> {b| health : Int}
+      -> GameModel.Random
+      -> ( {a| health : Int}, {b| health : Int}, String, GameModel.Random )
 attack dude1 dude2 generator =
     let hp1 = dude1.health - 1
         (dmg, gen) = Generator.int32Range (1, 5) generator

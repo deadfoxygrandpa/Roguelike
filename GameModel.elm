@@ -14,6 +14,7 @@ type State = { player : Player
 type Player = { location : Location
               , avatar : Element
               , health : Int
+              , level : Int
               }
 
 type Enemy = { location : Location
@@ -35,7 +36,7 @@ type Interface = { info : Element }
 data Input = Up | Down | Left | Right | Nop
 
 player : Element -> Player
-player elem = Player (Grid.Coordinate 2 2) elem 10
+player elem = Player (Grid.Coordinate 2 2) elem 10 1
 
 enemy : Element -> Enemy
 enemy elem = Enemy (Grid.Coordinate 14 4) elem 10

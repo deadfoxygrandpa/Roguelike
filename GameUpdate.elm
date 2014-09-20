@@ -46,7 +46,7 @@ attack : {a| health : Int} -> {b| health : Int} -> ({a| health : Int}, {b| healt
 attack dude1 dude2 =
     let hp1 = dude1.health - 1
         hp2 = dude2.health - 2
-        msg = "you hit the enemy for 2 dmg. he hit you for 1 dmg"
+        msg = "you hit the enemy for 2 dmg"
     in  ({dude1| health <- hp1}, {dude2| health <- hp2}, msg)
 
 cleanup : GameModel.State -> GameModel.State

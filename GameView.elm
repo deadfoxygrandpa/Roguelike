@@ -101,7 +101,7 @@ sidebar state =
         bar = flow down [ flow right [state.player.avatar, text ": You, Level ", text <| show state.player.level]
                         , flow right [text "Health: ", text <| show state.player.health]
                         ]
-    in  container (widthOf bar + 20) 300 midTop bar
+    in  container (widthOf bar + 20) (heightOf bar) midTop bar
 
 display : GameModel.State -> Element
 display state = flow right [sidebar state, mainScreen state] |> color black

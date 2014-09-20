@@ -21,7 +21,7 @@ floor = group [ rect (toFloat xScale) (toFloat yScale) |> filled black
 
 wall : Form
 wall = group [ rect (toFloat xScale) (toFloat yScale) |> filled grey
-             , guy {avatar = "#" |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
+             , guy {avatar = "#" |> toText |> monospace |> Text.color black |> centered} GameModel.Visible
              ]
 
 door : Form

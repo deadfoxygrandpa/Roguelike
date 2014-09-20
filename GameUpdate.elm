@@ -1,6 +1,7 @@
 module GameUpdate where
 
 import Grid
+import Generator
 
 import GameModel
 
@@ -23,8 +24,8 @@ update input state =
                     [enemy]     -> Just enemy
                     []          -> Nothing
         state' =  case enemy of
-                    Just enemy -> let (player', enemy', msg) = attack player enemy
-                                  in  log msg {state| player <- player', enemies <- enemy' :: tail state.enemies}
+                    Just enemy -> let (player', enemy', msg, gen) = attack player enemy state.generator
+                                  in  log msg {state| player <- player', enemies <- enemy' :: tail state.enemies, generator <- gen}
                     Nothing    -> {state| player <- move (x', y') state player}
     in  state' |> reveal |> cleanup
 
@@ -42,12 +43,13 @@ moveX x = move (x, 0)
 moveY : Int -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
 moveY y = move (0, y)
 
-attack : {a| health : Int} -> {b| health : Int} -> ({a| health : Int}, {b| health : Int}, String)
-attack dude1 dude2 =
+attack : {a| health : Int} -> {b| health : Int} -> GameModel.Random -> ({a| health : Int}, {b| health : Int}, String, GameModel.Random)
+attack dude1 dude2 generator =
     let hp1 = dude1.health - 1
-        hp2 = dude2.health - 2
-        msg = "you hit the enemy for 2 dmg"
-    in  ({dude1| health <- hp1}, {dude2| health <- hp2}, msg)
+        (dmg, gen) = Generator.int32Range (1, 5) generator
+        hp2 = dude2.health - dmg
+        msg = "you hit the enemy for " ++ show dmg ++  " dmg"
+    in  ({dude1| health <- hp1}, {dude2| health <- hp2}, msg, gen)
 
 cleanup : GameModel.State -> GameModel.State
 cleanup state =

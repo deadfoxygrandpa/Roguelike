@@ -18,7 +18,7 @@ port title = "Chimera"
 seed : Int
 seed = 2014
 
-gen : Generator.Generator Generator.Standard.Standard
+gen : GameModel.Random
 gen = Generator.Standard.generator seed
 
 initialLevel : Grid.Grid GameModel.Tile

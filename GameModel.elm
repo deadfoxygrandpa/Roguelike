@@ -11,7 +11,7 @@ type State = { player : Player
              , level : Grid.Grid Tile
              , explored : Grid.Grid Visibility
              , log : [String]
-             , generator : Generator.Generator Generator.Standard.Standard
+             , generator : Random
              }
 
 type Player = { location : Location
@@ -37,6 +37,8 @@ data Visibility = Visible
 type Interface = { info : Element }
 
 data Input = Up | Down | Left | Right | Nop
+
+type Random = Generator.Generator Generator.Standard.Standard
 
 player : Element -> Player
 player elem = Player (Grid.Coordinate 2 2) elem 10 1

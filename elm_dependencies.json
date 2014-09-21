@@ -6,7 +6,7 @@
     "exposed-modules": [],
     "elm-version": "0.13",
     "dependencies": {
-        "jcollard/generator": "0.3"
+        "jcollard/generator": "0.4"
     },
     "repository": "https://github.com/deadfoxygrandpa/Roguelike.git"
 }

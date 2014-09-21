@@ -18,11 +18,13 @@ type Player = { location : Location
               , avatar : Element
               , health : Int
               , level : Int
+              , dmg : (Int, Int)
               }
 
 type Enemy = { location : Location
              , avatar : Element
              , health : Int
+             , dmg : (Int, Int)
              }
 
 type Location = Grid.Coordinate
@@ -39,10 +41,10 @@ data Input = Up | Down | Left | Right | Nop
 type Random = Generator.Generator Generator.Standard.Standard
 
 player : Element -> Player
-player elem = Player (Grid.Coordinate 2 2) elem 10 1
+player elem = Player (Grid.Coordinate 2 2) elem 10 1 (1, 2)
 
 enemy : Element -> Enemy
-enemy elem = Enemy (Grid.Coordinate 14 4) elem 10
+enemy elem = Enemy (Grid.Coordinate 14 4) elem 10 (1, 2)
 
 location : Int -> Int -> Location
 location = Grid.Coordinate

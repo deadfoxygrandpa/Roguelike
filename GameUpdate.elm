@@ -46,16 +46,17 @@ moveX x = move (x, 0)
 moveY : Int -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
 moveY y = move (0, y)
 
-attack : {a| health : Int}
-      -> {b| health : Int}
+attack : {a| health : Int, dmg : (Int, Int)}
+      -> {b| health : Int, dmg : (Int, Int)}
       -> GameModel.Random
-      -> ( {a| health : Int}, {b| health : Int}, String, GameModel.Random )
+      -> ( {a| health : Int, dmg : (Int, Int)}, {b| health : Int, dmg : (Int, Int)}, String, GameModel.Random )
 attack dude1 dude2 generator =
-    let hp1 = dude1.health - 1
-        (dmg, gen) = Generator.int32Range (1, 5) generator
-        hp2 = dude2.health - dmg
-        msg = "you hit the enemy for " ++ show dmg ++  " dmg"
-    in  ({dude1| health <- hp1}, {dude2| health <- hp2}, msg, gen)
+    let (dmg1, gen) = Generator.int32Range (dude1.dmg) generator
+        (dmg2, gen') = Generator.int32Range (dude2.dmg) gen
+        hp1 = dude1.health - dmg2
+        hp2 = dude2.health - dmg1
+        msg = "you hit the enemy for " ++ show dmg1 ++  " dmg"
+    in  ({dude1| health <- hp1}, {dude2| health <- hp2}, msg, gen')
 
 cleanup : GameModel.State -> GameModel.State
 cleanup state =

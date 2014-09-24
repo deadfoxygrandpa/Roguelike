@@ -19,6 +19,15 @@ fromList xs =
         grid = Array.fromList <| List.map row xs
     in  Grid grid <| Size (length << head <| xs) (length xs)
 
+toCoordinates : Grid a -> [Coordinate]
+toCoordinates gridder =
+    let s : Size
+        s = gridder.size
+        xs : Int -> [(Int, Int)]
+        xs y = List.map (\x -> (x, y)) [0..s.width - 1]
+        pairs = concatMap xs [0..s.height - 1]
+    in  List.map (\(x, y) -> Coordinate x y) pairs
+
 set : Coordinate -> a -> Grid a -> Grid a
 set {x, y} a grid =
     if | x < 0 -> grid

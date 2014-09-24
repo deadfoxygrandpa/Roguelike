@@ -105,6 +105,29 @@ mainScreen state =
                   , (flow down <| map text (take 3 state.log))
                   ]
 
+background : Grid.Grid GameModel.Tile -> Element
+background level =
+    let grid = Grid.toList level
+        (w, h) = (level.size.width * xScale, level.size.height * yScale)
+
+        xOffset : Int -> Float
+        xOffset n      = ((toFloat n) - (toFloat level.size.width) / 2) * (toFloat xScale)
+
+        yOffset : Int -> Float
+        yOffset n      = ((toFloat n) - (toFloat level.size.height) / 2) * (toFloat yScale)
+
+        mkLayer : [[a]] -> ((Int, [a]) -> [Form]) -> Element
+        mkLayer grid mapRow =
+                         let rows  = zip (reverse [0..level.size.height - 1]) grid
+                             forms = concatMap mapRow rows
+                         in  collage (w + xScale) (h + yScale) forms
+
+        row : (a -> Form) -> (Int, [a]) -> [Form]
+        row mkTile (n, tiles) = let tiles' = zip [0..level.size.width - 1] tiles
+                                    makeTile (n', t) = move (xOffset n', yOffset n) <| mkTile t
+                                in  map makeTile tiles'
+    in mkLayer grid (row tile)
+
 sidebar : GameModel.State -> Element
 sidebar state =
     let x = 5

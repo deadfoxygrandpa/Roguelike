@@ -43,32 +43,35 @@ initialExplored =
     let grid = Grid.toList initialLevel
     in  map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
 
-initialPlayer : GameModel.Player
-initialPlayer =
-    "@"
+initialPlayer : GameModel.Random -> (GameModel.Player, GameModel.Random)
+initialPlayer gen =
+    let elem = "@"
         |> toText
         |> monospace
         |> Text.color white
         |> centered
-        |> GameModel.player
+    in  GameModel.player (elem, gen)
 
-initalEnemy : GameModel.Enemy
-initalEnemy =
-    "e"
+initialEnemy : GameModel.Random -> (GameModel.Enemy, GameModel.Random)
+initialEnemy gen =
+    let elem = "e"
         |> toText
         |> monospace
         |> Text.color white
         |> centered
-        |> GameModel.enemy
+    in GameModel.enemy (elem, gen)
 
 initialState : GameModel.State
-initialState = GameModel.State
-                    initialPlayer
-                    [initalEnemy]
+initialState = 
+    let (player, gen') = initialPlayer gen
+        (enemy, gen'') = initialEnemy gen'
+    in  GameModel.State
+                    player
+                    [enemy]
                     initialLevel
                     initialExplored
                     ["you enter the dungeon"]
-                    gen
+                    gen''
                         |> GameUpdate.reveal
 
 inputs : Signal GameModel.Input

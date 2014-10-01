@@ -24,6 +24,7 @@ type Player = { location : Location
               , protection : Int
               , coordination : Int
               , power : Int
+              , initiative : Int
               }
 
 type Enemy = { location : Location
@@ -34,6 +35,8 @@ type Enemy = { location : Location
              , protection : Int
              , coordination : Int
              , power : Int
+             , initiative : Int
+
              }
 
 type Location = Grid.Coordinate
@@ -49,11 +52,15 @@ data Input = Up | Down | Left | Right | Nop
 
 type Random = Generator.Generator Generator.Standard.Standard
 
-player : Element -> Player
-player elem = Player (Grid.Coordinate 2 2) elem 10 10 10 20 1 50 100 2
+player : (Element, Random) -> (Player, Random)
+player (elem, gen) =
+    let (initiative, gen') = Generator.int32Range (1, 100) gen
+    in  (Player (Grid.Coordinate 2 2) elem 10 10 10 20 1 50 100 2 initiative, gen')
 
-enemy : Element -> Enemy
-enemy elem = Enemy (Grid.Coordinate 14 4) elem 10 20 1 50 100 2
+enemy : (Element, Random) -> (Enemy, Random)
+enemy (elem, gen) = 
+    let (initiative, gen') = Generator.int32Range (1, 100) gen
+    in  (Enemy (Grid.Coordinate 14 4) elem 10 20 1 50 100 2 initiative, gen')
 
 location : Int -> Int -> Location
 location = Grid.Coordinate

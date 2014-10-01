@@ -140,6 +140,7 @@ sidebar state =
                         , flow right [text "Protection: ", text <| show state.player.protection ++ "%"]
                         , flow right [text "Coordination: ", text <| show state.player.coordination ++ "%"]
                         , flow right [text "Power: ", text <| show state.player.power]
+                        , flow right [text "Initiative: ", text <| show state.player.initiative]
                         ]
     in  container (widthOf bar + 20) (heightOf bar) midTop bar
 

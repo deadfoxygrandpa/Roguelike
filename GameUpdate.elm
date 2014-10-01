@@ -46,17 +46,22 @@ moveX x = move (x, 0)
 moveY : Int -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
 moveY y = move (0, y)
 
-attack : {a| health : Int, dmg : (Int, Int)}
-      -> {b| health : Int, dmg : (Int, Int)}
+attack : {a| coordination : Int, power : Int}
+      -> {b| stealth : Int, protection : Int, armor : Int, health : Int}
       -> GameModel.Random
-      -> ( {a| health : Int, dmg : (Int, Int)}, {b| health : Int, dmg : (Int, Int)}, String, GameModel.Random )
+      -> ({a| coordination : Int, power : Int}, {b| stealth : Int, protection : Int, armor : Int, health : Int}, String, GameModel.Random )
 attack dude1 dude2 generator =
-    let (dmg1, gen) = Generator.int32Range (dude1.dmg) generator
-        (dmg2, gen') = Generator.int32Range (dude2.dmg) gen
-        hp1 = dude1.health - dmg2
-        hp2 = dude2.health - dmg1
-        msg = "you hit the enemy for " ++ show dmg1 ++  " dmg"
-    in  ({dude1| health <- hp1}, {dude2| health <- hp2}, msg, gen')
+    let (roll1, gen) = Generator.int32Range (1, 100) generator
+        (roll2, gen') = Generator.int32Range (1, 100) gen
+        hit = if roll1 > dude1.coordination - dude2.stealth then False else True
+        guard = if dude1.coordination - dude2.stealth > 100 then dude2.protection - (dude1.coordination - dude2.stealth `rem` 100) else dude2.protection
+        block = if hit == True && roll2 < guard then True else False
+        dmg = if | hit && not block -> dude1.power
+                 | hit && block     -> max 0 (dude1.power - dude2.armor)
+                 | not hit          -> 0
+        result = dude2.health - dmg
+        msg = if not hit then "you miss" else "you hit the enemy for " ++ show dmg ++  " dmg"
+    in  (dude1, {dude2| health <- result}, msg, gen')
 
 cleanup : GameModel.State -> GameModel.State
 cleanup state =

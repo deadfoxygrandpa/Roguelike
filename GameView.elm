@@ -131,8 +131,15 @@ background level =
 sidebar : GameModel.State -> Element
 sidebar state =
     let x = 5
-        bar = flow down [ flow right [state.player.avatar, text ": You, Level ", text <| show state.player.level]
+        bar = flow down [ flow right [state.player.avatar, text ": You"]
                         , flow right [text "Health: ", text <| show state.player.health]
+                        , flow right [text "Energy: ", text <| show state.player.energy]
+                        , flow right [text "Hunger: ", text <| show state.player.hunger]
+                        , flow right [text "Stealth: ", text <| show state.player.stealth ++ "%"]
+                        , flow right [text "Armor: ", text <| show state.player.armor]
+                        , flow right [text "Protection: ", text <| show state.player.protection ++ "%"]
+                        , flow right [text "Coordination: ", text <| show state.player.coordination ++ "%"]
+                        , flow right [text "Power: ", text <| show state.player.power]
                         ]
     in  container (widthOf bar + 20) (heightOf bar) midTop bar
 

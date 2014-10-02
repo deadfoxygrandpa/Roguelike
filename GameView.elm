@@ -131,7 +131,7 @@ background level =
 sidebar : GameModel.State -> Element
 sidebar state =
     let x = 5
-        bar = flow down [ flow right [state.player.avatar, text ": You"]
+        bar = flow down [ flow right [state.player.avatar, text <| ": " ++ state.player.name]
                         , flow right [text "Health: ", text <| show state.player.health]
                         , flow right [text "Energy: ", text <| show state.player.energy]
                         , flow right [text "Hunger: ", text <| show state.player.hunger]

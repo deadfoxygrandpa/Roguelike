@@ -16,6 +16,7 @@ type State = { player : Player
 
 type Player = { location : Location
               , avatar : Element
+              , name : String
               , health : Int
               , energy : Int
               , hunger : Int
@@ -29,6 +30,7 @@ type Player = { location : Location
 
 type Enemy = { location : Location
              , avatar : Element
+             , name : String
              , health : Int
              , stealth : Int
              , armor : Int
@@ -52,15 +54,15 @@ data Input = Up | Down | Left | Right | Nop
 
 type Random = Generator.Generator Generator.Standard.Standard
 
-player : (Element, Random) -> (Player, Random)
-player (elem, gen) =
+player : (Element, String, Random) -> (Player, Random)
+player (elem, name, gen) =
     let (initiative, gen') = Generator.int32Range (1, 100) gen
-    in  (Player (Grid.Coordinate 2 2) elem 10 10 10 20 1 50 100 2 initiative, gen')
+    in  (Player (Grid.Coordinate 2 2) elem name 10 10 10 20 1 50 100 2 initiative, gen')
 
-enemy : (Element, Random) -> (Enemy, Random)
-enemy (elem, gen) = 
+enemy : (Element, String, Random) -> (Enemy, Random)
+enemy (elem, name, gen) = 
     let (initiative, gen') = Generator.int32Range (1, 100) gen
-    in  (Enemy (Grid.Coordinate 14 4) elem 10 20 1 50 100 2 initiative, gen')
+    in  (Enemy (Grid.Coordinate 14 4) elem name 10 20 1 50 100 2 initiative, gen')
 
 location : Int -> Int -> Location
 location = Grid.Coordinate

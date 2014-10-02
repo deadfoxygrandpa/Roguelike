@@ -4,6 +4,7 @@ import Grid
 import Generator
 
 import GameModel
+import MapGen
 
 log : String -> GameModel.State -> GameModel.State
 log s state = {state| log <- s :: state.log}
@@ -30,26 +31,21 @@ update input state =
                                                      , generator <- gen
                                               }
                     Nothing    -> {state| player <- move (x', y') state player}
-    in  state' |> reveal |> cleanup
+    in  state' |> reveal |> ai |> cleanup 
 
 
-move : (Int, Int) -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
+move : (Int, Int) -> GameModel.State -> {a| location : GameModel.Location, initiative : Int} -> {a| location : GameModel.Location, initiative : Int}
 move (x, y) state a =
     let location = GameModel.location (a.location.x + x) (a.location.y + y)
+        initiative = a.initiative + 100
     in  case GameModel.pathable location state of
             False -> a
-            True  -> {a| location <- location}
+            True  -> {a| location <- location, initiative <- initiative}
 
-moveX : Int -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
-moveX x = move (x, 0)
-
-moveY : Int -> GameModel.State -> {a| location : GameModel.Location} -> {a| location : GameModel.Location}
-moveY y = move (0, y)
-
-attack : {a| coordination : Int, power : Int}
-      -> {b| stealth : Int, protection : Int, armor : Int, health : Int}
+attack : {a| coordination : Int, power : Int, initiative : Int, name : String}
+      -> {b| stealth : Int, protection : Int, armor : Int, health : Int, name : String}
       -> GameModel.Random
-      -> ({a| coordination : Int, power : Int}, {b| stealth : Int, protection : Int, armor : Int, health : Int}, String, GameModel.Random )
+      -> ({a| coordination : Int, power : Int, initiative : Int, name : String}, {b| stealth : Int, protection : Int, armor : Int, health : Int, name : String}, String, GameModel.Random )
 attack dude1 dude2 generator =
     let (roll1, gen) = Generator.int32Range (1, 100) generator
         (roll2, gen') = Generator.int32Range (1, 100) gen
@@ -60,17 +56,39 @@ attack dude1 dude2 generator =
                  | hit && block     -> max 0 (dude1.power - dude2.armor)
                  | not hit          -> 0
         result = dude2.health - dmg
-        msg = if not hit then "you miss" else "you hit the enemy for " ++ show dmg ++  " dmg"
-    in  (dude1, {dude2| health <- result}, msg, gen')
+        msg = if not hit then dude1.name ++ " miss" else dude1.name ++ " hit " ++ dude2.name ++ " for " ++ show dmg ++  " dmg"
+    in  ({dude1| initiative <- dude1.initiative + 100}, {dude2| health <- result}, msg, gen')
 
 cleanup : GameModel.State -> GameModel.State
 cleanup state =
-    let enemies' = filter alive state.enemies
-        alive enemy = enemy.health > 0
-        msg = if length enemies' == length state.enemies then Nothing else (Just "the enemy died")
+    let dead = filter (\enemy -> enemy.health <= 0) state.enemies
+        alive = filter (\enemy -> enemy.health > 0) state.enemies
+        msg = if length dead == 0 then Nothing else Just (foldl (++) "" <| map (\enemy -> enemy.name ++ " died. ") dead)
     in  case msg of
             Nothing -> state
-            Just m  -> log m {state| enemies <- enemies'}
+            Just m  -> log m {state| enemies <- alive}
+
+ai : GameModel.State -> GameModel.State
+ai state =
+    let enemy = case filter (\enemy -> enemy.initiative <= state.player.initiative) state.enemies of
+                    (enemy::es) -> Just enemy
+                    [enemy]     -> Just enemy
+                    []          -> Nothing
+    in  case enemy of
+                    Just enemy  -> let state'' = attackIfClose enemy state
+                                   in ai state''
+                    Nothing     -> state
+
+attackIfClose : GameModel.Enemy -> GameModel.State -> GameModel.State
+attackIfClose enemy state =
+    case filter (\location -> location == state.player.location) (MapGen.neighborhood enemy.location) of
+                    [location] -> let (enemy', player', msg, gen) = attack enemy state.player state.generator
+                                in  log msg { state| player <- player'
+                                                     , enemies <- enemy' :: tail state.enemies
+                                                     , generator <- gen
+                                            }
+                    []         -> {state| enemies <- {enemy| initiative <- enemy.initiative + 100} :: tail state.enemies}
+
 
 -- Right now this just reveals a box around the player
 reveal : GameModel.State -> GameModel.State

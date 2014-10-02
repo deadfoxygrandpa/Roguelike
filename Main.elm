@@ -50,7 +50,7 @@ initialPlayer gen =
         |> monospace
         |> Text.color white
         |> centered
-    in  GameModel.player (elem, gen)
+    in  GameModel.player (elem, "You", gen)
 
 initialEnemy : GameModel.Random -> (GameModel.Enemy, GameModel.Random)
 initialEnemy gen =
@@ -59,7 +59,7 @@ initialEnemy gen =
         |> monospace
         |> Text.color white
         |> centered
-    in GameModel.enemy (elem, gen)
+    in GameModel.enemy (elem, "enemy", gen)
 
 initialState : GameModel.State
 initialState = 

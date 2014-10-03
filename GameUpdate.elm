@@ -4,7 +4,6 @@ import Grid
 import Generator
 
 import GameModel
-import MapGen
 
 log : String -> GameModel.State -> GameModel.State
 log s state = {state| log <- s :: state.log}
@@ -31,7 +30,7 @@ update input state =
                                                      , generator <- gen
                                               }
                     Nothing    -> {state| player <- move (x', y') state player}
-    in  state' |> reveal |> ai |> cleanup 
+    in  state' |> cleanup |> ai |> reveal
 
 
 move : (Int, Int) -> GameModel.State -> {a| location : GameModel.Location, initiative : Int} -> {a| location : GameModel.Location, initiative : Int}
@@ -81,18 +80,19 @@ ai state =
 
 attackIfClose : GameModel.Enemy -> GameModel.State -> GameModel.State
 attackIfClose enemy state =
-    case filter (\location -> location == state.player.location) (MapGen.neighborhood enemy.location) of
+    case filter (\location -> location == state.player.location) (Grid.neighborhood enemy.location) of
                     [location] -> let (enemy', player', msg, gen) = attack enemy state.player state.generator
-                                in  log msg { state| player <- player'
+                                  in  log msg { state| player <- player'
                                                      , enemies <- enemy' :: tail state.enemies
                                                      , generator <- gen
-                                            }
-                    []         -> {state| enemies <- {enemy| initiative <- enemy.initiative + 100} :: tail state.enemies}
-
+                                              }
+                    []         -> let ([x, y], gen') = Generator.listOf (Generator.int32Range (-1, 1)) 2 state.generator
+                                      enemy' = move (x, y) state enemy
+                                  in  {state| enemies <- enemy' :: tail state.enemies, generator <- gen'}
 
 -- Right now this just reveals a box around the player
 reveal : GameModel.State -> GameModel.State
 reveal state =
-    let explored  = Grid.map (\t -> if t == GameModel.Visible then GameModel.Explored else t) state.explored
+    let explored  = Grid.map2 (\t -> if t == GameModel.Visible then GameModel.Explored else t) state.explored
         explored' = foldl (\l explored -> Grid.set l GameModel.Visible explored) explored (GameModel.visible state)
     in {state| explored <- explored'}

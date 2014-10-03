@@ -94,7 +94,23 @@ inGrid {x, y} grid =
            | y >= height -> False
            | otherwise   -> True
 
-map : (a -> b) -> Grid a -> Grid b
-map f grid =
+map2 : (a -> b) -> Grid a -> Grid b
+map2 f grid =
     let grid' = Array.map (\row -> Array.map f row) grid.grid
     in  {grid| grid <- grid'}
+
+neighborhood : Coordinate -> [Coordinate]
+neighborhood {x, y} = map (\(a, b) -> Coordinate a b)
+    [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1)
+    , (x - 1, y),     (x, y),     (x + 1, y)
+    , (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)
+    ]
+
+neighborhood2 : Coordinate -> [Coordinate]
+neighborhood2 {x, y} = map (\(c, b) -> Coordinate c b)
+    [ (x - 2, y - 2), (x - 1, y - 2), (x, y - 2), (x + 1, y - 2), (x + 2, y - 2)
+    , (x - 2, y - 1), (x - 1, y - 1), (x, y - 1), (x + 1, y - 1), (x + 2, y - 1)
+    , (x - 2, y),     (x - 1, y),     (x, y),     (x + 1, y),     (x + 2, y)
+    , (x - 2, y + 1), (x - 1, y + 1), (x, y + 1), (x + 1, y + 1), (x + 2, y + 1)
+    , (x - 2, y + 2), (x - 1, y + 2), (x, y + 2), (x + 1, y + 2), (x + 2, y + 2)
+    ]

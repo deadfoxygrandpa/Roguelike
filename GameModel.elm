@@ -98,12 +98,7 @@ showTile tile =
     in  centered << monospace << toText <| c
 
 visible : State -> [Location]
-visible state =
-    let {x, y} = state.player.location
-    in  map (\(a, b) -> location a b) [ (x - 1, y - 1), (x, y - 1), (x + 1, y - 1)
-                                      , (x - 1, y),     (x, y),     (x + 1, y)
-                                      , (x - 1, y + 1), (x, y + 1), (x + 1, y + 1)
-                                      ]
+visible state = Grid.neighborhood2 state.player.location
 
 visibility : State -> Location -> Visibility
 visibility state location = Grid.getOrElse Unexplored location state.explored

@@ -1,5 +1,7 @@
 module MapGen where
 
+import Graphics.Input as Input
+
 import Grid
 import Generator
 import Generator.Standard
@@ -78,13 +80,24 @@ iterate2 grid =
         x = map (\coord -> (coord, rule coord)) coords
     in  foldl (\(coord, a) grid -> Grid.set coord a grid) grid x
 
-main =
-    let level = (randomMap (30, 20) gen |> fst)
-    in  flow down <| map (\x -> GameView.background x `above` spacer 10 10)
-            [level |> iterate2 |> iterate2 |> iterate2 |> iterate2 |> iterate |> iterate |> iterate]
+main = lift display state
+
+display state =
+    let level = fst state
+    in  flow down <| button :: map (\x -> GameView.background x `above` spacer 10 10) [level]
+            --[level |> iterate2 |> iterate2 |> iterate2 |> iterate2 |> iterate |> iterate |> iterate]
 
 seed : Int
 seed = 2013
 
 gen : GameModel.Random
 gen = Generator.Standard.generator seed
+
+input = Input.input ()
+
+button = Input.button input.handle () "clickar"
+
+state : Signal (Grid.Grid GameModel.Tile, GameModel.Random)
+state = foldp (\a state' -> randomMap dimensions (snd state')) (randomMap dimensions gen) input.signal
+
+dimensions = (40, 30)

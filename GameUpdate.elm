@@ -93,6 +93,6 @@ attackIfClose enemy state =
 -- Right now this just reveals a box around the player
 reveal : GameModel.State -> GameModel.State
 reveal state =
-    let explored  = Grid.map2 (\t -> if t == GameModel.Visible then GameModel.Explored else t) state.explored
+    let explored  = Grid.map (\t -> if t == GameModel.Visible then GameModel.Explored else t) state.explored
         explored' = foldl (\l explored -> Grid.set l GameModel.Visible explored) explored (GameModel.visible state)
     in {state| explored <- explored'}

@@ -59,7 +59,7 @@ player elem name gen =
     let (initiative, gen') = Generator.int32Range (1, 100) gen
     in  (Player (Grid.Coordinate 2 2) elem name 10 10 10 20 1 50 100 2 initiative, gen')
 
-enemy : Element String Random -> (Enemy, Random)
+enemy : Element -> String -> Random -> (Enemy, Random)
 enemy elem name gen = 
     let (initiative, gen') = Generator.int32Range (1, 100) gen
     in  (Enemy (Grid.Coordinate 14 4) elem name 10 20 1 50 100 2 initiative, gen')

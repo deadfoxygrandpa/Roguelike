@@ -10528,18 +10528,37 @@ Elm.Benchmarks.make = function (_elm) {
    $String = Elm.String.make(_elm),
    $Text = Elm.Text.make(_elm);
    var noForm = $Graphics$Collage.toForm($Graphics$Element.empty);
+   var acidOverlay = noForm;
+   var doorOverlay = noForm;
    var yScale = 20;
    var yOffset = F2(function (n,
    h) {
       return ($Basics.toFloat(n) - $Basics.toFloat(h) / 2) * $Basics.toFloat(yScale);
    });
    var xScale = 15;
+   var floor = $Graphics$Collage.filled($Color.black)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
+   var wall = $Graphics$Collage.filled($Color.grey)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
    var door = $Graphics$Collage.filled($Color.purple)(A2($Graphics$Collage.rect,
    $Basics.toFloat(xScale),
    $Basics.toFloat(yScale)));
    var acid = $Graphics$Collage.filled($Color.darkGreen)(A2($Graphics$Collage.rect,
    $Basics.toFloat(xScale),
    $Basics.toFloat(yScale)));
+   var tile = function (t) {
+      return function () {
+         switch (t.ctor)
+         {case "Acid": return acid;
+            case "Door": return door;
+            case "Floor": return floor;
+            case "Wall": return wall;}
+         _E.Case($moduleName,
+         "between lines 150 and 154");
+      }();
+   };
    var guy = F2(function (r,
    visibility) {
       return function () {
@@ -10564,29 +10583,26 @@ Elm.Benchmarks.make = function (_elm) {
          return noForm;
       }();
    });
-   var floor = $Graphics$Collage.group(_L.fromArray([$Graphics$Collage.filled($Color.black)(A2($Graphics$Collage.rect,
-                                                    $Basics.toFloat(xScale),
-                                                    $Basics.toFloat(yScale)))
-                                                    ,A2(guy,
-                                                    {_: {}
-                                                    ,avatar: $Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("."))))},
-                                                    $GameModel.Visible)]));
-   var wall = $Graphics$Collage.group(_L.fromArray([$Graphics$Collage.filled($Color.grey)(A2($Graphics$Collage.rect,
-                                                   $Basics.toFloat(xScale),
-                                                   $Basics.toFloat(yScale)))
-                                                   ,A2(guy,
-                                                   {_: {}
-                                                   ,avatar: $Text.centered($Text.color($Color.black)($Text.monospace($Text.toText("#"))))},
-                                                   $GameModel.Visible)]));
-   var tile = function (t) {
+   var floorOverlay = A2(guy,
+   {_: {}
+   ,avatar: $Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("."))))},
+   $GameModel.Visible);
+   var wallOverlay = A2(guy,
+   {_: {}
+   ,avatar: $Text.centered($Text.color($Color.black)($Text.monospace($Text.toText("#"))))},
+   $GameModel.Visible);
+   var tileOverlay = function (t) {
       return function () {
          switch (t.ctor)
-         {case "Acid": return acid;
-            case "Door": return door;
-            case "Floor": return floor;
-            case "Wall": return wall;}
+         {case "Acid":
+            return acidOverlay;
+            case "Door": return doorOverlay;
+            case "Floor":
+            return floorOverlay;
+            case "Wall":
+            return wallOverlay;}
          _E.Case($moduleName,
-         "between lines 142 and 146");
+         "between lines 158 and 162");
       }();
    };
    var xOffset = F2(function (n,
@@ -10596,68 +10612,86 @@ Elm.Benchmarks.make = function (_elm) {
    var row = F4(function (w,
    h,
    mkTile,
-   _v2) {
+   _v3) {
       return function () {
-         switch (_v2.ctor)
+         switch (_v3.ctor)
          {case "_Tuple2":
             return function () {
-                 var makeTile = function (_v6) {
+                 var makeTile = function (_v7) {
                     return function () {
-                       switch (_v6.ctor)
+                       switch (_v7.ctor)
                        {case "_Tuple2":
                           return $Graphics$Collage.move({ctor: "_Tuple2"
                                                         ,_0: A2(xOffset,
-                                                        _v6._0,
+                                                        _v7._0,
                                                         w)
                                                         ,_1: A2(yOffset,
-                                                        _v2._0,
-                                                        h)})(mkTile(_v6._1));}
+                                                        _v3._0,
+                                                        h)})(mkTile(_v7._1));}
                        _E.Case($moduleName,
-                       "on line 191, column 52 to 96");
+                       "on line 215, column 52 to 96");
                     }();
                  };
                  var tiles$ = A2($List.zip,
                  _L.range(0,w - 1),
-                 _v2._1);
+                 _v3._1);
                  return A2($List.map,
                  makeTile,
                  tiles$);
               }();}
          _E.Case($moduleName,
-         "between lines 190 and 192");
+         "between lines 214 and 216");
       }();
    });
    var mkLayer = F4(function (grid,
    mapRow,
-   w,
-   h) {
+   h$,
+   _v11) {
       return function () {
-         var rows = A2($List.zip,
-         $List.reverse(_L.range(0,
-         h - 1)),
-         grid);
-         var forms = A2($List.concatMap,
-         mapRow,
-         rows);
-         return A3($Graphics$Collage.collage,
-         w + xScale,
-         h + yScale,
-         forms);
+         switch (_v11.ctor)
+         {case "_Tuple2":
+            return function () {
+                 var rows = A2($List.zip,
+                 $List.reverse(_L.range(0,
+                 h$ - 1)),
+                 grid);
+                 var forms = A2($List.concatMap,
+                 mapRow,
+                 rows);
+                 return A3($Graphics$Collage.collage,
+                 _v11._0 + xScale,
+                 _v11._1 + yScale,
+                 forms);
+              }();}
+         _E.Case($moduleName,
+         "between lines 209 and 211");
       }();
    });
    var render2 = function (level) {
       return function () {
+         var $ = {ctor: "_Tuple2"
+                 ,_0: level.size.width
+                 ,_1: level.size.height},
+         w$ = $._0,
+         h$ = $._1;
          var $ = {ctor: "_Tuple2"
                  ,_0: level.size.width * xScale
                  ,_1: level.size.height * yScale},
          w = $._0,
          h = $._1;
          var grid = $Grid.toList(level);
-         return A4(mkLayer,
+         var bg = A4(mkLayer,
          grid,
-         A3(row,w,h,tile),
-         level.size.width,
-         level.size.height);
+         A3(row,w$,h$,tile),
+         level.size.height,
+         {ctor: "_Tuple2",_0: w,_1: h});
+         var overlay = A4(mkLayer,
+         grid,
+         A3(row,w$,h$,tileOverlay),
+         level.size.height,
+         {ctor: "_Tuple2",_0: w,_1: h});
+         return $Graphics$Element.layers(_L.fromArray([bg
+                                                      ,overlay]));
       }();
    };
    var render = function (level) {
@@ -10669,32 +10703,32 @@ Elm.Benchmarks.make = function (_elm) {
             return ($Basics.toFloat(n) - $Basics.toFloat(level.size.width) / 2) * $Basics.toFloat(xScale);
          };
          var row = F2(function (mkTile,
-         _v10) {
+         _v15) {
             return function () {
-               switch (_v10.ctor)
+               switch (_v15.ctor)
                {case "_Tuple2":
                   return function () {
-                       var makeTile = function (_v14) {
+                       var makeTile = function (_v19) {
                           return function () {
-                             switch (_v14.ctor)
+                             switch (_v19.ctor)
                              {case "_Tuple2":
                                 return $Graphics$Collage.move({ctor: "_Tuple2"
-                                                              ,_0: xOffset(_v14._0)
-                                                              ,_1: yOffset(_v10._0)})(mkTile(_v14._1));}
+                                                              ,_0: xOffset(_v19._0)
+                                                              ,_1: yOffset(_v15._0)})(mkTile(_v19._1));}
                              _E.Case($moduleName,
-                             "on line 124, column 56 to 96");
+                             "on line 129, column 56 to 96");
                           }();
                        };
                        var tiles$ = A2($List.zip,
                        _L.range(0,
                        level.size.width - 1),
-                       _v10._1);
+                       _v15._1);
                        return A2($List.map,
                        makeTile,
                        tiles$);
                     }();}
                _E.Case($moduleName,
-               "between lines 123 and 125");
+               "between lines 128 and 130");
             }();
          });
          var $ = {ctor: "_Tuple2"
@@ -10719,9 +10753,12 @@ Elm.Benchmarks.make = function (_elm) {
             }();
          });
          var grid = $Grid.toList(level);
-         return A2(mkLayer,
-         grid,
-         row(tile));
+         return $Graphics$Element.layers(_L.fromArray([A2(mkLayer,
+                                                      grid,
+                                                      row(tile))
+                                                      ,A2(mkLayer,
+                                                      grid,
+                                                      row(tileOverlay))]));
       }();
    };
    var maps = function () {
@@ -10738,10 +10775,14 @@ Elm.Benchmarks.make = function (_elm) {
                     ,_1: 10}
                    ,{ctor: "_Tuple2",_0: 20,_1: 20}
                    ,{ctor: "_Tuple2",_0: 20,_1: 30}
+                   ,{ctor: "_Tuple2",_0: 30,_1: 30}
                    ,{ctor: "_Tuple2"
-                    ,_0: 30
-                    ,_1: 30}]));
+                    ,_0: 50
+                    ,_1: 50}]));
    }();
+   var mapElements = A2($List.map,
+   render2,
+   maps);
    var newPlayer = function (player) {
       return _U.replace([["health"
                          ,player.health - 1]],
@@ -10764,7 +10805,7 @@ Elm.Benchmarks.make = function (_elm) {
          switch (x.ctor)
          {case "Left":
             return $Either.Left($List.head(A2($List.map,
-              function (_v21) {
+              function (_v26) {
                  return function () {
                     return newState(x._0);
                  }();
@@ -10772,7 +10813,7 @@ Elm.Benchmarks.make = function (_elm) {
               _L.range(1,n))));
             case "Right":
             return $Either.Right($List.head(A2($List.map,
-              function (_v23) {
+              function (_v28) {
                  return function () {
                     return newPlayer(x._0);
                  }();
@@ -10834,7 +10875,7 @@ Elm.Benchmarks.make = function (_elm) {
       return $Grid.fromList(A2($List.map,
       function (row) {
          return A2($List.map,
-         function (_v26) {
+         function (_v31) {
             return function () {
                return $GameModel.Unexplored;
             }();
@@ -10891,7 +10932,11 @@ Elm.Benchmarks.make = function (_elm) {
                                           ,A3($Benchmark.logic,
                                           "render maps - logic",
                                           render,
-                                          maps)]));
+                                          maps)
+                                          ,A3($Benchmark.render,
+                                          "draw prerendered maps",
+                                          $Basics.identity,
+                                          mapElements)]));
    _elm.Benchmarks.values = {_op: _op
                             ,gen: gen
                             ,listOf2: listOf2
@@ -10904,16 +10949,22 @@ Elm.Benchmarks.make = function (_elm) {
                             ,newPlayer: newPlayer
                             ,stateTest: stateTest
                             ,maps: maps
+                            ,mapElements: mapElements
                             ,main: main
                             ,render: render
                             ,render2: render2
                             ,xScale: xScale
                             ,yScale: yScale
                             ,tile: tile
+                            ,tileOverlay: tileOverlay
                             ,floor: floor
+                            ,floorOverlay: floorOverlay
                             ,wall: wall
+                            ,wallOverlay: wallOverlay
                             ,door: door
+                            ,doorOverlay: doorOverlay
                             ,acid: acid
+                            ,acidOverlay: acidOverlay
                             ,noForm: noForm
                             ,guy: guy
                             ,xOffset: xOffset

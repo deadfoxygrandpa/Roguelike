@@ -10502,14 +10502,33 @@ Elm.GameView.make = function (_elm) {
       }();
    };
    var noForm = $Graphics$Collage.toForm($Graphics$Element.empty);
+   var doorOverlay = noForm;
+   var acidOverlay = noForm;
    var yScale = 20;
    var xScale = 15;
+   var floor = $Graphics$Collage.filled($Color.black)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
+   var wall = $Graphics$Collage.filled($Color.grey)(A2($Graphics$Collage.rect,
+   $Basics.toFloat(xScale),
+   $Basics.toFloat(yScale)));
    var door = $Graphics$Collage.filled($Color.purple)(A2($Graphics$Collage.rect,
    $Basics.toFloat(xScale),
    $Basics.toFloat(yScale)));
    var acid = $Graphics$Collage.filled($Color.darkGreen)(A2($Graphics$Collage.rect,
    $Basics.toFloat(xScale),
    $Basics.toFloat(yScale)));
+   var tile = function (t) {
+      return function () {
+         switch (t.ctor)
+         {case "Acid": return acid;
+            case "Door": return door;
+            case "Floor": return floor;
+            case "Wall": return wall;}
+         _E.Case($moduleName,
+         "between lines 49 and 53");
+      }();
+   };
    var fog = $Graphics$Collage.filled(A4($Color.rgba,
    0,
    0,
@@ -10532,7 +10551,7 @@ Elm.GameView.make = function (_elm) {
             case "Unexplored": return fog;
             case "Visible": return noForm;}
          _E.Case($moduleName,
-         "between lines 49 and 52");
+         "between lines 65 and 68");
       }();
    };
    var player = $Graphics$Collage.filled($Color.red)($Graphics$Collage.circle($Basics.toFloat(xScale) / 2));
@@ -10561,33 +10580,98 @@ Elm.GameView.make = function (_elm) {
          return noForm;
       }();
    });
-   var floor = $Graphics$Collage.group(_L.fromArray([$Graphics$Collage.filled($Color.black)(A2($Graphics$Collage.rect,
-                                                    $Basics.toFloat(xScale),
-                                                    $Basics.toFloat(yScale)))
-                                                    ,A2(guy,
-                                                    {_: {}
-                                                    ,avatar: $Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("."))))},
-                                                    $GameModel.Visible)]));
-   var wall = $Graphics$Collage.group(_L.fromArray([$Graphics$Collage.filled($Color.grey)(A2($Graphics$Collage.rect,
-                                                   $Basics.toFloat(xScale),
-                                                   $Basics.toFloat(yScale)))
-                                                   ,A2(guy,
-                                                   {_: {}
-                                                   ,avatar: $Text.centered($Text.color($Color.black)($Text.monospace($Text.toText("#"))))},
-                                                   $GameModel.Visible)]));
-   var tile = function (t) {
+   var floorOverlay = A2(guy,
+   {_: {}
+   ,avatar: $Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("."))))},
+   $GameModel.Visible);
+   var wallOverlay = A2(guy,
+   {_: {}
+   ,avatar: $Text.centered($Text.color($Color.black)($Text.monospace($Text.toText("#"))))},
+   $GameModel.Visible);
+   var tileOverlay = function (t) {
       return function () {
          switch (t.ctor)
-         {case "Acid": return acid;
-            case "Door": return door;
-            case "Floor": return floor;
-            case "Wall": return wall;}
+         {case "Acid":
+            return acidOverlay;
+            case "Door": return doorOverlay;
+            case "Floor":
+            return floorOverlay;
+            case "Wall":
+            return wallOverlay;}
          _E.Case($moduleName,
-         "between lines 41 and 45");
+         "between lines 57 and 61");
+      }();
+   };
+   var background = function (level) {
+      return function () {
+         var yOffset = function (n) {
+            return ($Basics.toFloat(n) - $Basics.toFloat(level.size.height) / 2) * $Basics.toFloat(yScale);
+         };
+         var xOffset = function (n) {
+            return ($Basics.toFloat(n) - $Basics.toFloat(level.size.width) / 2) * $Basics.toFloat(xScale);
+         };
+         var row = F2(function (mkTile,
+         _v4) {
+            return function () {
+               switch (_v4.ctor)
+               {case "_Tuple2":
+                  return function () {
+                       var makeTile = function (_v8) {
+                          return function () {
+                             switch (_v8.ctor)
+                             {case "_Tuple2":
+                                return $Graphics$Collage.move({ctor: "_Tuple2"
+                                                              ,_0: xOffset(_v8._0)
+                                                              ,_1: yOffset(_v4._0)})(mkTile(_v8._1));}
+                             _E.Case($moduleName,
+                             "on line 143, column 56 to 96");
+                          }();
+                       };
+                       var tiles$ = A2($List.zip,
+                       _L.range(0,
+                       level.size.width - 1),
+                       _v4._1);
+                       return A2($List.map,
+                       makeTile,
+                       tiles$);
+                    }();}
+               _E.Case($moduleName,
+               "between lines 142 and 144");
+            }();
+         });
+         var $ = {ctor: "_Tuple2"
+                 ,_0: level.size.width * xScale
+                 ,_1: level.size.height * yScale},
+         w = $._0,
+         h = $._1;
+         var mkLayer = F2(function (grid,
+         mapRow) {
+            return function () {
+               var rows = A2($List.zip,
+               $List.reverse(_L.range(0,
+               level.size.height - 1)),
+               grid);
+               var forms = A2($List.concatMap,
+               mapRow,
+               rows);
+               return A3($Graphics$Collage.collage,
+               w + xScale,
+               h + yScale,
+               forms);
+            }();
+         });
+         var grid = $Grid.toList(level);
+         return $Graphics$Element.layers(_L.fromArray([A2(mkLayer,
+                                                      grid,
+                                                      row(tile))
+                                                      ,A2(mkLayer,
+                                                      grid,
+                                                      row(tileOverlay))]));
       }();
    };
    var mainScreen = function (state) {
       return function () {
+         var bg = background(state.level);
          var grid = $Grid.toList(state.level);
          var yOffset = function (n) {
             return ($Basics.toFloat(n) - $Basics.toFloat(state.level.size.height) / 2) * $Basics.toFloat(yScale);
@@ -10616,32 +10700,32 @@ Elm.GameView.make = function (_elm) {
             state.enemies));
          }();
          var row = F2(function (mkTile,
-         _v3) {
+         _v12) {
             return function () {
-               switch (_v3.ctor)
+               switch (_v12.ctor)
                {case "_Tuple2":
                   return function () {
-                       var makeTile = function (_v7) {
+                       var makeTile = function (_v16) {
                           return function () {
-                             switch (_v7.ctor)
+                             switch (_v16.ctor)
                              {case "_Tuple2":
                                 return $Graphics$Collage.move({ctor: "_Tuple2"
-                                                              ,_0: xOffset(_v7._0)
-                                                              ,_1: yOffset(_v3._0)})(mkTile(_v7._1));}
+                                                              ,_0: xOffset(_v16._0)
+                                                              ,_1: yOffset(_v12._0)})(mkTile(_v16._1));}
                              _E.Case($moduleName,
-                             "on line 93, column 56 to 96");
+                             "on line 109, column 56 to 96");
                           }();
                        };
                        var tiles$ = A2($List.zip,
                        _L.range(0,
                        state.level.size.width - 1),
-                       _v3._1);
+                       _v12._1);
                        return A2($List.map,
                        makeTile,
                        tiles$);
                     }();}
                _E.Case($moduleName,
-               "between lines 92 and 94");
+               "between lines 108 and 110");
             }();
          });
          var $ = {ctor: "_Tuple2"
@@ -10665,9 +10749,6 @@ Elm.GameView.make = function (_elm) {
                forms);
             }();
          });
-         var bg = A2(mkLayer,
-         grid,
-         row(tile));
          var fogger = A2(mkLayer,
          $Grid.toList(state.explored),
          row(fogT));
@@ -10691,81 +10772,22 @@ Elm.GameView.make = function (_elm) {
       _L.fromArray([sidebar(state)
                    ,mainScreen(state)])));
    };
-   var background = function (level) {
-      return function () {
-         var yOffset = function (n) {
-            return ($Basics.toFloat(n) - $Basics.toFloat(level.size.height) / 2) * $Basics.toFloat(yScale);
-         };
-         var xOffset = function (n) {
-            return ($Basics.toFloat(n) - $Basics.toFloat(level.size.width) / 2) * $Basics.toFloat(xScale);
-         };
-         var row = F2(function (mkTile,
-         _v11) {
-            return function () {
-               switch (_v11.ctor)
-               {case "_Tuple2":
-                  return function () {
-                       var makeTile = function (_v15) {
-                          return function () {
-                             switch (_v15.ctor)
-                             {case "_Tuple2":
-                                return $Graphics$Collage.move({ctor: "_Tuple2"
-                                                              ,_0: xOffset(_v15._0)
-                                                              ,_1: yOffset(_v11._0)})(mkTile(_v15._1));}
-                             _E.Case($moduleName,
-                             "on line 127, column 56 to 96");
-                          }();
-                       };
-                       var tiles$ = A2($List.zip,
-                       _L.range(0,
-                       level.size.width - 1),
-                       _v11._1);
-                       return A2($List.map,
-                       makeTile,
-                       tiles$);
-                    }();}
-               _E.Case($moduleName,
-               "between lines 126 and 128");
-            }();
-         });
-         var $ = {ctor: "_Tuple2"
-                 ,_0: level.size.width * xScale
-                 ,_1: level.size.height * yScale},
-         w = $._0,
-         h = $._1;
-         var mkLayer = F2(function (grid,
-         mapRow) {
-            return function () {
-               var rows = A2($List.zip,
-               $List.reverse(_L.range(0,
-               level.size.height - 1)),
-               grid);
-               var forms = A2($List.concatMap,
-               mapRow,
-               rows);
-               return A3($Graphics$Collage.collage,
-               w + xScale,
-               h + yScale,
-               forms);
-            }();
-         });
-         var grid = $Grid.toList(level);
-         return A2(mkLayer,
-         grid,
-         row(tile));
-      }();
-   };
    _elm.GameView.values = {_op: _op
                           ,xScale: xScale
                           ,yScale: yScale
                           ,noForm: noForm
                           ,floor: floor
+                          ,floorOverlay: floorOverlay
                           ,wall: wall
+                          ,wallOverlay: wallOverlay
                           ,door: door
+                          ,doorOverlay: doorOverlay
                           ,acid: acid
+                          ,acidOverlay: acidOverlay
                           ,fog: fog
                           ,halfFog: halfFog
                           ,tile: tile
+                          ,tileOverlay: tileOverlay
                           ,fogT: fogT
                           ,player: player
                           ,enemy: enemy

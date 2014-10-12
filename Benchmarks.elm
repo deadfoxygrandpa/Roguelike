@@ -6,6 +6,8 @@ import Either
 
 import GameModel
 import GameUpdate
+import GameView
+import MapGen
 import Grid
 
 import Generator
@@ -82,7 +84,16 @@ stateTest n x =
         Either.Left state -> Either.Left <| head <| map (\_ -> newState state) [1..n]
         Either.Right player -> Either.Right <| head <| map (\_ -> newPlayer player) [1..n]
 
-main = Benchmark.run [ Benchmark.logic "listOf floats" (listOf2 Generator.float gen) [1, 10, 100, 1000, 2000]
-                     , Benchmark.logic "listOf ints" (listOf2 Generator.int32 gen) [1, 10, 100, 1000, 2000]
-                     , Benchmark.logic "new state" (uncurry stateTest) [(500, Either.Left state), (500, Either.Right state.player)]
+maps : [Grid.Grid GameModel.Tile]
+maps =
+    let gen = Generator.Standard.generator 1492
+        mkMap dimensions = MapGen.randomMap dimensions gen |> fst |> MapGen.iterate2
+    in  map mkMap [ (20, 10)
+                  , (20, 20)
+                  , (20, 30)
+                  , (30, 30)
+                  ]                
+
+main = Benchmark.run [ Benchmark.logic "new state" (uncurry stateTest) [(500, Either.Left state), (500, Either.Right state.player)]
+                     , Benchmark.render "render maps" GameView.background maps
                      ]

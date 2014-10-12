@@ -6,7 +6,6 @@ import Either
 
 import GameModel
 import GameUpdate
-import GameView
 import MapGen
 import Grid
 
@@ -95,5 +94,99 @@ maps =
                   ]                
 
 main = Benchmark.run [ Benchmark.logic "new state" (uncurry stateTest) [(500, Either.Left state), (500, Either.Right state.player)]
-                     , Benchmark.render "render maps" GameView.background maps
+                     , Benchmark.render "alternate render maps" render2 maps
+                     , Benchmark.logic "alternate render maps" render2 maps
+                     , Benchmark.render "render maps" render maps                     
+                     , Benchmark.logic "render maps" render maps                     
                      ]
+
+-- rendering information pulled from GameView for modification
+
+render : Grid.Grid GameModel.Tile -> Element
+render level =
+    let grid = Grid.toList level
+        (w, h) = (level.size.width * xScale, level.size.height * yScale)
+
+        xOffset : Int -> Float
+        xOffset n      = ((toFloat n) - (toFloat level.size.width) / 2) * (toFloat xScale)
+
+        yOffset : Int -> Float
+        yOffset n      = ((toFloat n) - (toFloat level.size.height) / 2) * (toFloat yScale)
+
+        mkLayer : [[a]] -> ((Int, [a]) -> [Form]) -> Element
+        mkLayer grid mapRow =
+                         let rows  = zip (reverse [0..level.size.height - 1]) grid
+                             forms = concatMap mapRow rows
+                         in  collage (w + xScale) (h + yScale) forms
+
+        row : (a -> Form) -> (Int, [a]) -> [Form]
+        row mkTile (n, tiles) = let tiles' = zip [0..level.size.width - 1] tiles
+                                    makeTile (n', t) = move (xOffset n', yOffset n) <| mkTile t
+                                in  map makeTile tiles'
+    in mkLayer grid (row tile)                     
+
+render2 : Grid.Grid GameModel.Tile -> Element
+render2 level =
+    let grid = Grid.toList level
+        (w, h) = (level.size.width * xScale, level.size.height * yScale)
+    in mkLayer grid (row w h tile) level.size.width level.size.height
+
+xScale : Int
+xScale = 15
+
+yScale : Int
+yScale = 20
+
+tile : GameModel.Tile -> Form
+tile t =
+    case t of
+        GameModel.Floor -> floor
+        GameModel.Wall  -> wall
+        GameModel.Door  -> door
+        GameModel.Acid  -> acid
+
+floor : Form
+floor = group [ rect (toFloat xScale) (toFloat yScale) |> filled black
+              , guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
+              ]
+
+wall : Form
+wall = group [ rect (toFloat xScale) (toFloat yScale) |> filled grey
+             , guy {avatar = "#" |> toText |> monospace |> Text.color black |> centered} GameModel.Visible
+             ]
+
+door : Form
+door = rect (toFloat xScale) (toFloat yScale) |> filled purple
+
+acid : Form
+acid = rect (toFloat xScale) (toFloat yScale) |> filled darkGreen
+
+noForm : Form
+noForm = toForm empty
+
+guy : {r| avatar : Element} -> GameModel.Visibility -> Form
+guy r visibility =
+    case visibility of
+        GameModel.Visible -> let form = r.avatar |> toForm
+                                 (xSize, ySize) = sizeOf r.avatar
+                                 x /// y = toFloat x / toFloat y -- This is a convenience function to divide two ints
+                                 factor = min (xScale /// xSize) (yScale /// ySize)
+                             in  scale factor form
+        _                 -> noForm
+
+xOffset : Int -> Int -> Float
+xOffset n w = ((toFloat n) - (toFloat w) / 2) * (toFloat xScale)
+
+yOffset : Int -> Int -> Float
+yOffset n h = ((toFloat n) - (toFloat h) / 2) * (toFloat yScale)        
+
+mkLayer : [[a]] -> ((Int, [a]) -> [Form]) -> Int -> Int -> Element
+mkLayer grid mapRow w h =
+                 let rows  = zip (reverse [0..h - 1]) grid
+                     forms = concatMap mapRow rows
+                 in  collage (w + xScale) (h + yScale) forms
+
+row : Int -> Int -> (a -> Form) -> (Int, [a]) -> [Form]
+row w h mkTile (n, tiles) = let tiles' = zip [0..w - 1] tiles
+                                makeTile (n', t) = move (xOffset n' w, yOffset n h) <| mkTile t
+                            in  map makeTile tiles'

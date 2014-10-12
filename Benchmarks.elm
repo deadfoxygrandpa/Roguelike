@@ -95,9 +95,9 @@ maps =
 
 main = Benchmark.run [ Benchmark.logic "new state" (uncurry stateTest) [(500, Either.Left state), (500, Either.Right state.player)]
                      , Benchmark.render "alternate render maps" render2 maps
-                     , Benchmark.logic "alternate render maps" render2 maps
+                     , Benchmark.logic "alternate render maps - logic" render2 maps
                      , Benchmark.render "render maps" render maps                     
-                     , Benchmark.logic "render maps" render maps                     
+                     , Benchmark.logic "render maps - logic" render maps                     
                      ]
 
 -- rendering information pulled from GameView for modification

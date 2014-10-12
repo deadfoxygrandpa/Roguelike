@@ -15,20 +15,28 @@ noForm : Form
 noForm = toForm empty
 
 floor : Form
-floor = group [ rect (toFloat xScale) (toFloat yScale) |> filled black
-              , guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
-              ]
+floor = rect (toFloat xScale) (toFloat yScale) |> filled black
+
+floorOverlay : Form
+floorOverlay = guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
 
 wall : Form
-wall = group [ rect (toFloat xScale) (toFloat yScale) |> filled grey
-             , guy {avatar = "#" |> toText |> monospace |> Text.color black |> centered} GameModel.Visible
-             ]
+wall = rect (toFloat xScale) (toFloat yScale) |> filled grey
+
+wallOverlay : Form
+wallOverlay = guy {avatar = "#" |> toText |> monospace |> Text.color black |> centered} GameModel.Visible
 
 door : Form
 door = rect (toFloat xScale) (toFloat yScale) |> filled purple
 
+doorOverlay : Form
+doorOverlay = noForm
+
 acid : Form
 acid = rect (toFloat xScale) (toFloat yScale) |> filled darkGreen
+
+acidOverlay : Form
+acidOverlay = noForm
 
 fog : Form
 fog = rect (toFloat xScale) (toFloat yScale) |> filled (rgba 0 0 0 1)
@@ -43,6 +51,14 @@ tile t =
         GameModel.Wall  -> wall
         GameModel.Door  -> door
         GameModel.Acid  -> acid
+
+tileOverlay : GameModel.Tile -> Form
+tileOverlay t =
+    case t of
+        GameModel.Floor -> floorOverlay
+        GameModel.Wall  -> wallOverlay
+        GameModel.Door  -> doorOverlay
+        GameModel.Acid  -> acidOverlay
 
 fogT : GameModel.Visibility -> Form
 fogT visibility =
@@ -126,7 +142,7 @@ background level =
         row mkTile (n, tiles) = let tiles' = zip [0..level.size.width - 1] tiles
                                     makeTile (n', t) = move (xOffset n', yOffset n) <| mkTile t
                                 in  map makeTile tiles'
-    in mkLayer grid (row tile)
+    in layers [mkLayer grid (row tile), mkLayer grid (row tileOverlay)]
 
 sidebar : GameModel.State -> Element
 sidebar state =

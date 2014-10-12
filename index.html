@@ -4980,23 +4980,26 @@ Elm.List.make = function (_elm) {
    var head = $Native$List.head;
    _op["++"] = $Native$List.append;
    _op["::"] = $Native$List.cons;
-   var maybeCons = F2(function (mx,
+   var maybeCons = F3(function (f,
+   mx,
    xs) {
       return function () {
-         switch (mx.ctor)
+         var _v1 = f(mx);
+         switch (_v1.ctor)
          {case "Just":
-            return A2(_op["::"],mx._0,xs);
+            return A2(_op["::"],_v1._0,xs);
             case "Nothing": return xs;}
          _E.Case($moduleName,
          "between lines 145 and 149");
       }();
    });
-   var filterMap = function (xs) {
-      return A3($Native$List.foldr,
-      maybeCons,
+   var filterMap = F2(function (f,
+   xs) {
+      return A3(foldr,
+      maybeCons(f),
       _L.fromArray([]),
       xs);
-   };
+   });
    var partition = function (pred) {
       return function () {
          var step = F2(function (x,
@@ -10315,8 +10318,24 @@ Elm.Main.make = function (_elm) {
    var inputs = A2($Signal._op["<~"],
    $GameModel.handle,
    $Keyboard.lastPressed);
-   var initalEnemy = $GameModel.enemy($Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("e")))));
-   var initialPlayer = $GameModel.player($Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("@")))));
+   var initialEnemy = function (gen) {
+      return function () {
+         var elem = $Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("e"))));
+         return A3($GameModel.enemy,
+         elem,
+         "enemy",
+         gen);
+      }();
+   };
+   var initialPlayer = function (gen) {
+      return function () {
+         var elem = $Text.centered($Text.color($Color.white)($Text.monospace($Text.toText("@"))));
+         return A3($GameModel.player,
+         elem,
+         "You",
+         gen);
+      }();
+   };
    var initialLevel = function () {
       var s = _L.fromArray(["####################"
                            ,"#        #         #"
@@ -10360,15 +10379,23 @@ Elm.Main.make = function (_elm) {
       },
       grid));
    }();
-   var seed = 2015;
+   var seed = 2014;
    var gen = $Generator$Standard.generator(seed);
-   var initialState = $GameUpdate.reveal(A6($GameModel.State,
-   initialPlayer,
-   _L.fromArray([initalEnemy]),
-   initialLevel,
-   initialExplored,
-   _L.fromArray(["you enter the dungeon"]),
-   gen));
+   var initialState = function () {
+      var $ = initialPlayer(gen),
+      player = $._0,
+      gen$ = $._1;
+      var $ = initialEnemy(gen$),
+      enemy = $._0,
+      gen$$ = $._1;
+      return $GameUpdate.reveal(A6($GameModel.State,
+      player,
+      _L.fromArray([enemy]),
+      initialLevel,
+      initialExplored,
+      _L.fromArray(["you enter the dungeon"]),
+      gen$$));
+   }();
    var state = A3($Signal.foldp,
    $GameUpdate.update,
    initialState,
@@ -10387,7 +10414,7 @@ Elm.Main.make = function (_elm) {
                       ,initialLevel: initialLevel
                       ,initialExplored: initialExplored
                       ,initialPlayer: initialPlayer
-                      ,initalEnemy: initalEnemy
+                      ,initialEnemy: initialEnemy
                       ,initialState: initialState
                       ,inputs: inputs
                       ,state: state
@@ -10425,12 +10452,47 @@ Elm.GameView.make = function (_elm) {
          _L.fromArray([A2($Graphics$Element.flow,
                       $Graphics$Element.right,
                       _L.fromArray([state.player.avatar
-                                   ,text(": You, Level ")
-                                   ,text($String.show(state.player.level))]))
+                                   ,text(_L.append(": ",
+                                   state.player.name))]))
                       ,A2($Graphics$Element.flow,
                       $Graphics$Element.right,
                       _L.fromArray([text("Health: ")
-                                   ,text($String.show(state.player.health))]))]));
+                                   ,text($String.show(state.player.health))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Energy: ")
+                                   ,text($String.show(state.player.energy))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Hunger: ")
+                                   ,text($String.show(state.player.hunger))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Stealth: ")
+                                   ,text(_L.append($String.show(state.player.stealth),
+                                   "%"))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Armor: ")
+                                   ,text($String.show(state.player.armor))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Protection: ")
+                                   ,text(_L.append($String.show(state.player.protection),
+                                   "%"))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Coordination: ")
+                                   ,text(_L.append($String.show(state.player.coordination),
+                                   "%"))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Power: ")
+                                   ,text($String.show(state.player.power))]))
+                      ,A2($Graphics$Element.flow,
+                      $Graphics$Element.right,
+                      _L.fromArray([text("Initiative: ")
+                                   ,text($String.show(state.player.initiative))]))]));
          var x = 5;
          return A4($Graphics$Element.container,
          $Graphics$Element.widthOf(bar) + 20,
@@ -10629,6 +10691,70 @@ Elm.GameView.make = function (_elm) {
       _L.fromArray([sidebar(state)
                    ,mainScreen(state)])));
    };
+   var background = function (level) {
+      return function () {
+         var yOffset = function (n) {
+            return ($Basics.toFloat(n) - $Basics.toFloat(level.size.height) / 2) * $Basics.toFloat(yScale);
+         };
+         var xOffset = function (n) {
+            return ($Basics.toFloat(n) - $Basics.toFloat(level.size.width) / 2) * $Basics.toFloat(xScale);
+         };
+         var row = F2(function (mkTile,
+         _v11) {
+            return function () {
+               switch (_v11.ctor)
+               {case "_Tuple2":
+                  return function () {
+                       var makeTile = function (_v15) {
+                          return function () {
+                             switch (_v15.ctor)
+                             {case "_Tuple2":
+                                return $Graphics$Collage.move({ctor: "_Tuple2"
+                                                              ,_0: xOffset(_v15._0)
+                                                              ,_1: yOffset(_v11._0)})(mkTile(_v15._1));}
+                             _E.Case($moduleName,
+                             "on line 127, column 56 to 96");
+                          }();
+                       };
+                       var tiles$ = A2($List.zip,
+                       _L.range(0,
+                       level.size.width - 1),
+                       _v11._1);
+                       return A2($List.map,
+                       makeTile,
+                       tiles$);
+                    }();}
+               _E.Case($moduleName,
+               "between lines 126 and 128");
+            }();
+         });
+         var $ = {ctor: "_Tuple2"
+                 ,_0: level.size.width * xScale
+                 ,_1: level.size.height * yScale},
+         w = $._0,
+         h = $._1;
+         var mkLayer = F2(function (grid,
+         mapRow) {
+            return function () {
+               var rows = A2($List.zip,
+               $List.reverse(_L.range(0,
+               level.size.height - 1)),
+               grid);
+               var forms = A2($List.concatMap,
+               mapRow,
+               rows);
+               return A3($Graphics$Collage.collage,
+               w + xScale,
+               h + yScale,
+               forms);
+            }();
+         });
+         var grid = $Grid.toList(level);
+         return A2(mkLayer,
+         grid,
+         row(tile));
+      }();
+   };
    _elm.GameView.values = {_op: _op
                           ,xScale: xScale
                           ,yScale: yScale
@@ -10646,6 +10772,7 @@ Elm.GameView.make = function (_elm) {
                           ,guy: guy
                           ,text: text
                           ,mainScreen: mainScreen
+                          ,background: background
                           ,sidebar: sidebar
                           ,display: display};
    return _elm.GameView.values;
@@ -10695,25 +10822,46 @@ Elm.GameUpdate.make = function (_elm) {
    dude2,
    generator) {
       return function () {
+         var guard = _U.cmp(dude1.coordination - dude2.stealth,
+         100) > 0 ? dude2.protection - (dude1.coordination - A2($Basics.rem,
+         dude2.stealth,
+         100)) : dude2.protection;
          var $ = A2($Generator.int32Range,
-         {ctor: "_Tuple2",_0: 1,_1: 5},
+         {ctor: "_Tuple2",_0: 1,_1: 100},
          generator),
-         dmg = $._0,
+         roll1 = $._0,
          gen = $._1;
-         var hp2 = dude2.health - dmg;
-         var msg = _L.append("you hit the enemy for ",
+         var $ = A2($Generator.int32Range,
+         {ctor: "_Tuple2",_0: 1,_1: 100},
+         gen),
+         roll2 = $._0,
+         gen$ = $._1;
+         var hit = _U.cmp(roll1,
+         dude1.coordination - dude2.stealth) > 0 ? false : true;
+         var block = _U.eq(hit,
+         true) && _U.cmp(roll2,
+         guard) < 0 ? true : false;
+         var dmg = hit && $Basics.not(block) ? dude1.power : hit && block ? A2($Basics.max,
+         0,
+         dude1.power - dude2.armor) : $Basics.not(hit) ? 0 : _E.If($moduleName,
+         "between lines 54 and 56");
+         var result = dude2.health - dmg;
+         var msg = $Basics.not(hit) ? _L.append(dude1.name,
+         " miss") : _L.append(dude1.name,
+         _L.append(" hit ",
+         _L.append(dude2.name,
+         _L.append(" for ",
          _L.append($String.show(dmg),
-         " dmg"));
-         var hp1 = dude1.health - 1;
+         " dmg")))));
          return {ctor: "_Tuple4"
-                ,_0: _U.replace([["health"
-                                 ,hp1]],
+                ,_0: _U.replace([["initiative"
+                                 ,dude1.initiative + 100]],
                 dude1)
                 ,_1: _U.replace([["health"
-                                 ,hp2]],
+                                 ,result]],
                 dude2)
                 ,_2: msg
-                ,_3: gen};
+                ,_3: gen$};
       }();
    });
    var move = F3(function (_v0,
@@ -10723,6 +10871,7 @@ Elm.GameUpdate.make = function (_elm) {
          switch (_v0.ctor)
          {case "_Tuple2":
             return function () {
+                 var initiative = a.initiative + 100;
                  var location = A2($GameModel.location,
                  a.location.x + _v0._0,
                  a.location.y + _v0._1);
@@ -10734,26 +10883,17 @@ Elm.GameUpdate.make = function (_elm) {
                     {case false: return a;
                        case true:
                        return _U.replace([["location"
-                                          ,location]],
+                                          ,location]
+                                         ,["initiative",initiative]],
                          a);}
                     _E.Case($moduleName,
-                    "between lines 39 and 41");
+                    "between lines 40 and 42");
                  }();
               }();}
          _E.Case($moduleName,
-         "between lines 38 and 41");
+         "between lines 38 and 42");
       }();
    });
-   var moveX = function (x) {
-      return move({ctor: "_Tuple2"
-                  ,_0: x
-                  ,_1: 0});
-   };
-   var moveY = function (y) {
-      return move({ctor: "_Tuple2"
-                  ,_0: 0
-                  ,_1: y});
-   };
    var log = F2(function (s,
    state) {
       return _U.replace([["log"
@@ -10764,25 +10904,168 @@ Elm.GameUpdate.make = function (_elm) {
    });
    var cleanup = function (state) {
       return function () {
-         var alive = function (enemy) {
+         var alive = A2($List.filter,
+         function (enemy) {
             return _U.cmp(enemy.health,
             0) > 0;
-         };
-         var enemies$ = A2($List.filter,
-         alive,
+         },
          state.enemies);
-         var msg = _U.eq($List.length(enemies$),
-         $List.length(state.enemies)) ? $Maybe.Nothing : $Maybe.Just("the enemy died");
+         var dead = A2($List.filter,
+         function (enemy) {
+            return _U.cmp(enemy.health,
+            0) < 1;
+         },
+         state.enemies);
+         var msg = _U.eq($List.length(dead),
+         0) ? $Maybe.Nothing : $Maybe.Just(A2($List.foldl,
+         F2(function (x,y) {
+            return _L.append(x,y);
+         }),
+         "")(A2($List.map,
+         function (enemy) {
+            return _L.append(enemy.name,
+            " died. ");
+         },
+         dead)));
          return function () {
             switch (msg.ctor)
             {case "Just": return A2(log,
                  msg._0,
-                 _U.replace([["enemies"
-                             ,enemies$]],
+                 _U.replace([["enemies",alive]],
                  state));
                case "Nothing": return state;}
             _E.Case($moduleName,
-            "between lines 65 and 67");
+            "between lines 66 and 68");
+         }();
+      }();
+   };
+   var attackIfClose = F2(function (enemy,
+   state) {
+      return function () {
+         var _v7 = A2($List.filter,
+         function (location) {
+            return _U.eq(location,
+            state.player.location);
+         },
+         $Grid.neighborhood(enemy.location));
+         switch (_v7.ctor)
+         {case "::": switch (_v7._1.ctor)
+              {case "[]": return function () {
+                      var $ = A3(attack,
+                      enemy,
+                      state.player,
+                      state.generator),
+                      enemy$ = $._0,
+                      player$ = $._1,
+                      msg = $._2,
+                      gen = $._3;
+                      return A2(log,
+                      msg,
+                      _U.replace([["player",player$]
+                                 ,["enemies"
+                                  ,A2($List._op["::"],
+                                  enemy$,
+                                  $List.tail(state.enemies))]
+                                 ,["generator",gen]],
+                      state));
+                   }();}
+              break;
+            case "[]": return function () {
+                 var _ = A3($Generator.listOf,
+                 $Generator.int32Range({ctor: "_Tuple2"
+                                       ,_0: -1
+                                       ,_1: 1}),
+                 2,
+                 state.generator);
+                 var gen$ = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "::":
+                            switch (_._0._1.ctor)
+                              {case "::":
+                                 switch (_._0._1._1.ctor)
+                                   {case "[]": return _._1;}
+                                   break;}
+                              break;}
+                         break;}
+                    _E.Case($moduleName,
+                    "on line 89, column 56 to 121");
+                 }();
+                 var x = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "::":
+                            switch (_._0._1.ctor)
+                              {case "::":
+                                 switch (_._0._1._1.ctor)
+                                   {case "[]": return _._0._0;}
+                                   break;}
+                              break;}
+                         break;}
+                    _E.Case($moduleName,
+                    "on line 89, column 56 to 121");
+                 }();
+                 var y = function () {
+                    switch (_.ctor)
+                    {case "_Tuple2":
+                       switch (_._0.ctor)
+                         {case "::":
+                            switch (_._0._1.ctor)
+                              {case "::":
+                                 switch (_._0._1._1.ctor)
+                                   {case "[]": return _._0._1._0;}
+                                   break;}
+                              break;}
+                         break;}
+                    _E.Case($moduleName,
+                    "on line 89, column 56 to 121");
+                 }();
+                 var enemy$ = A3(move,
+                 {ctor: "_Tuple2",_0: x,_1: y},
+                 state,
+                 enemy);
+                 return _U.replace([["enemies"
+                                    ,A2($List._op["::"],
+                                    enemy$,
+                                    $List.tail(state.enemies))]
+                                   ,["generator",gen$]],
+                 state);
+              }();}
+         _E.Case($moduleName,
+         "between lines 83 and 91");
+      }();
+   });
+   var ai = function (state) {
+      return function () {
+         var enemy = function () {
+            var _v31 = A2($List.filter,
+            function (enemy) {
+               return _U.cmp(enemy.initiative,
+               state.player.initiative) < 1;
+            },
+            state.enemies);
+            switch (_v31.ctor)
+            {case "::":
+               return $Maybe.Just(_v31._0);
+               case "[]":
+               return $Maybe.Nothing;}
+            _E.Case($moduleName,
+            "between lines 72 and 76");
+         }();
+         return function () {
+            switch (enemy.ctor)
+            {case "Just":
+               return function () {
+                    var state$$ = A2(attackIfClose,
+                    enemy._0,
+                    state);
+                    return ai(state$$);
+                 }();
+               case "Nothing": return state;}
+            _E.Case($moduleName,
+            "between lines 76 and 79");
          }();
       }();
    };
@@ -10826,7 +11109,7 @@ Elm.GameUpdate.make = function (_elm) {
          x$$ = $._0,
          y$$ = $._1;
          var enemy = function () {
-            var _v8 = A2($List.filter,
+            var _v37 = A2($List.filter,
             function (enemy) {
                return _U.eq(enemy.location,
                A2($GameModel.location,
@@ -10834,9 +11117,9 @@ Elm.GameUpdate.make = function (_elm) {
                y$$));
             },
             state.enemies);
-            switch (_v8.ctor)
+            switch (_v37.ctor)
             {case "::":
-               return $Maybe.Just(_v8._0);
+               return $Maybe.Just(_v37._0);
                case "[]":
                return $Maybe.Nothing;}
             _E.Case($moduleName,
@@ -10874,17 +11157,17 @@ Elm.GameUpdate.make = function (_elm) {
             _E.Case($moduleName,
             "between lines 26 and 33");
          }();
-         return cleanup(reveal(state$));
+         return reveal(ai(cleanup(state$)));
       }();
    });
    _elm.GameUpdate.values = {_op: _op
                             ,log: log
                             ,update: update
                             ,move: move
-                            ,moveX: moveX
-                            ,moveY: moveY
                             ,attack: attack
                             ,cleanup: cleanup
+                            ,ai: ai
+                            ,attackIfClose: attackIfClose
                             ,reveal: reveal};
    return _elm.GameUpdate.values;
 };Elm.GameModel = Elm.GameModel || {};
@@ -10906,9 +11189,11 @@ Elm.GameModel.make = function (_elm) {
    $Generator$Standard = Elm.Generator.Standard.make(_elm),
    $Graphics$Element = Elm.Graphics.Element.make(_elm),
    $Grid = Elm.Grid.make(_elm),
-   $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Text = Elm.Text.make(_elm);
+   var visible = function (state) {
+      return $Grid.neighborhood2(state.player.location);
+   };
    var showTile = function (tile) {
       return function () {
          var c = function () {
@@ -10918,7 +11203,7 @@ Elm.GameModel.make = function (_elm) {
                case "Floor": return " ";
                case "Wall": return "#";}
             _E.Case($moduleName,
-            "between lines 73 and 78");
+            "between lines 93 and 98");
          }();
          return $Text.centered($Text.monospace($Text.toText(c)));
       }();
@@ -10938,7 +11223,7 @@ Elm.GameModel.make = function (_elm) {
                  return false;
                case "Nothing": return false;}
             _E.Case($moduleName,
-            "between lines 66 and 69");
+            "between lines 86 and 89");
          }();
       }();
    });
@@ -10949,50 +11234,6 @@ Elm.GameModel.make = function (_elm) {
       state.level);
    });
    var location = $Grid.Coordinate;
-   var visible = function (state) {
-      return function () {
-         var $ = state.player.location,
-         x = $.x,
-         y = $.y;
-         return A2($List.map,
-         function (_v3) {
-            return function () {
-               switch (_v3.ctor)
-               {case "_Tuple2":
-                  return A2(location,
-                    _v3._0,
-                    _v3._1);}
-               _E.Case($moduleName,
-               "on line 83, column 25 to 37");
-            }();
-         },
-         _L.fromArray([{ctor: "_Tuple2"
-                       ,_0: x - 1
-                       ,_1: y - 1}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x
-                       ,_1: y - 1}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x + 1
-                       ,_1: y - 1}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x - 1
-                       ,_1: y}
-                      ,{ctor: "_Tuple2",_0: x,_1: y}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x + 1
-                       ,_1: y}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x - 1
-                       ,_1: y + 1}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x
-                       ,_1: y + 1}
-                      ,{ctor: "_Tuple2"
-                       ,_0: x + 1
-                       ,_1: y + 1}]));
-      }();
-   };
    var Nop = {ctor: "Nop"};
    var Right = {ctor: "Right"};
    var Left = {ctor: "Left"};
@@ -11022,37 +11263,106 @@ Elm.GameModel.make = function (_elm) {
    var Door = {ctor: "Door"};
    var Wall = {ctor: "Wall"};
    var Floor = {ctor: "Floor"};
-   var Enemy = F3(function (a,
-   b,
-   c) {
-      return {_: {}
-             ,avatar: b
-             ,health: c
-             ,location: a};
-   });
-   var enemy = function (elem) {
-      return A3(Enemy,
-      A2($Grid.Coordinate,14,4),
-      elem,
-      10);
+   var Enemy = function (a) {
+      return function (b) {
+         return function (c) {
+            return function (d) {
+               return function (e) {
+                  return function (f) {
+                     return function (g) {
+                        return function (h) {
+                           return function (i) {
+                              return function (j) {
+                                 return {_: {}
+                                        ,armor: f
+                                        ,avatar: b
+                                        ,coordination: h
+                                        ,health: d
+                                        ,initiative: j
+                                        ,location: a
+                                        ,name: c
+                                        ,power: i
+                                        ,protection: g
+                                        ,stealth: e};
+                              };
+                           };
+                        };
+                     };
+                  };
+               };
+            };
+         };
+      };
    };
-   var Player = F4(function (a,
-   b,
-   c,
-   d) {
-      return {_: {}
-             ,avatar: b
-             ,health: c
-             ,level: d
-             ,location: a};
+   var enemy = F3(function (elem,
+   name,
+   gen) {
+      return function () {
+         var $ = A2($Generator.int32Range,
+         {ctor: "_Tuple2",_0: 1,_1: 100},
+         gen),
+         initiative = $._0,
+         gen$ = $._1;
+         return {ctor: "_Tuple2"
+                ,_0: Enemy(A2($Grid.Coordinate,
+                14,
+                4))(elem)(name)(10)(20)(1)(50)(100)(2)(initiative)
+                ,_1: gen$};
+      }();
    });
-   var player = function (elem) {
-      return A4(Player,
-      A2($Grid.Coordinate,2,2),
-      elem,
-      10,
-      1);
+   var Player = function (a) {
+      return function (b) {
+         return function (c) {
+            return function (d) {
+               return function (e) {
+                  return function (f) {
+                     return function (g) {
+                        return function (h) {
+                           return function (i) {
+                              return function (j) {
+                                 return function (k) {
+                                    return function (l) {
+                                       return {_: {}
+                                              ,armor: h
+                                              ,avatar: b
+                                              ,coordination: j
+                                              ,energy: e
+                                              ,health: d
+                                              ,hunger: f
+                                              ,initiative: l
+                                              ,location: a
+                                              ,name: c
+                                              ,power: k
+                                              ,protection: i
+                                              ,stealth: g};
+                                    };
+                                 };
+                              };
+                           };
+                        };
+                     };
+                  };
+               };
+            };
+         };
+      };
    };
+   var player = F3(function (elem,
+   name,
+   gen) {
+      return function () {
+         var $ = A2($Generator.int32Range,
+         {ctor: "_Tuple2",_0: 1,_1: 100},
+         gen),
+         initiative = $._0,
+         gen$ = $._1;
+         return {ctor: "_Tuple2"
+                ,_0: Player(A2($Grid.Coordinate,
+                2,
+                2))(elem)(name)(10)(10)(10)(20)(1)(50)(100)(2)(initiative)
+                ,_1: gen$};
+      }();
+   });
    var State = F6(function (a,
    b,
    c,
@@ -11421,7 +11731,7 @@ Elm.Grid.make = function (_elm) {
             case "Nothing":
             return $default;}
          _E.Case($moduleName,
-         "between lines 75 and 77");
+         "between lines 84 and 86");
       }();
    });
    var getRowOrFail = function (n) {
@@ -11447,7 +11757,7 @@ Elm.Grid.make = function (_elm) {
             case "Nothing":
             return $default;}
          _E.Case($moduleName,
-         "between lines 60 and 62");
+         "between lines 69 and 71");
       }();
    });
    var getOrFail = F2(function (_v6,
@@ -11478,7 +11788,7 @@ Elm.Grid.make = function (_elm) {
                case "Nothing":
                return $Maybe.Nothing;}
             _E.Case($moduleName,
-            "between lines 34 and 36");
+            "between lines 43 and 45");
          }();
       }();
    });
@@ -11494,7 +11804,7 @@ Elm.Grid.make = function (_elm) {
             case "Nothing":
             return $default;}
          _E.Case($moduleName,
-         "between lines 45 and 47");
+         "between lines 54 and 56");
       }();
    });
    var set = F3(function (_v14,
@@ -11531,6 +11841,170 @@ Elm.Grid.make = function (_elm) {
    b) {
       return {_: {},x: a,y: b};
    });
+   var toCoordinates = function (gridder) {
+      return function () {
+         var s = gridder.size;
+         var xs = function (y) {
+            return A2($List.map,
+            function (x) {
+               return {ctor: "_Tuple2"
+                      ,_0: x
+                      ,_1: y};
+            },
+            _L.range(0,s.width - 1));
+         };
+         var pairs = A2($List.concatMap,
+         xs,
+         _L.range(0,s.height - 1));
+         return A2($List.map,
+         function (_v16) {
+            return function () {
+               switch (_v16.ctor)
+               {case "_Tuple2":
+                  return A2(Coordinate,
+                    _v16._0,
+                    _v16._1);}
+               _E.Case($moduleName,
+               "on line 29, column 30 to 44");
+            }();
+         },
+         pairs);
+      }();
+   };
+   var neighborhood = function (_v20) {
+      return function () {
+         return A2($List.map,
+         function (_v22) {
+            return function () {
+               switch (_v22.ctor)
+               {case "_Tuple2":
+                  return A2(Coordinate,
+                    _v22._0,
+                    _v22._1);}
+               _E.Case($moduleName,
+               "on line 103, column 44 to 58");
+            }();
+         },
+         _L.fromArray([{ctor: "_Tuple2"
+                       ,_0: _v20.x - 1
+                       ,_1: _v20.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x
+                       ,_1: _v20.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x + 1
+                       ,_1: _v20.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x - 1
+                       ,_1: _v20.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x
+                       ,_1: _v20.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x + 1
+                       ,_1: _v20.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x - 1
+                       ,_1: _v20.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x
+                       ,_1: _v20.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v20.x + 1
+                       ,_1: _v20.y + 1}]));
+      }();
+   };
+   var neighborhood2 = function (_v26) {
+      return function () {
+         return A2($List.map,
+         function (_v28) {
+            return function () {
+               switch (_v28.ctor)
+               {case "_Tuple2":
+                  return A2(Coordinate,
+                    _v28._0,
+                    _v28._1);}
+               _E.Case($moduleName,
+               "on line 110, column 45 to 59");
+            }();
+         },
+         _L.fromArray([{ctor: "_Tuple2"
+                       ,_0: _v26.x - 2
+                       ,_1: _v26.y - 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 1
+                       ,_1: _v26.y - 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x
+                       ,_1: _v26.y - 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 1
+                       ,_1: _v26.y - 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 2
+                       ,_1: _v26.y - 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 2
+                       ,_1: _v26.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 1
+                       ,_1: _v26.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x
+                       ,_1: _v26.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 1
+                       ,_1: _v26.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 2
+                       ,_1: _v26.y - 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 2
+                       ,_1: _v26.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 1
+                       ,_1: _v26.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x
+                       ,_1: _v26.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 1
+                       ,_1: _v26.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 2
+                       ,_1: _v26.y}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 2
+                       ,_1: _v26.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 1
+                       ,_1: _v26.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x
+                       ,_1: _v26.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 1
+                       ,_1: _v26.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 2
+                       ,_1: _v26.y + 1}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 2
+                       ,_1: _v26.y + 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x - 1
+                       ,_1: _v26.y + 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x
+                       ,_1: _v26.y + 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 1
+                       ,_1: _v26.y + 2}
+                      ,{ctor: "_Tuple2"
+                       ,_0: _v26.x + 2
+                       ,_1: _v26.y + 2}]));
+      }();
+   };
    var Size = F2(function (a,b) {
       return {_: {}
              ,height: b
@@ -11541,12 +12015,12 @@ Elm.Grid.make = function (_elm) {
              ,grid: a
              ,size: b};
    });
-   var initialize = F2(function (_v16,
+   var initialize = F2(function (_v32,
    a) {
       return function () {
          return A2(Grid,
-         $Array.repeat(_v16.height)($Array.repeat(_v16.width)(a)),
-         _v16);
+         $Array.repeat(_v32.height)($Array.repeat(_v32.width)(a)),
+         _v32);
       }();
    });
    var fromList = function (xs) {
@@ -11569,6 +12043,7 @@ Elm.Grid.make = function (_elm) {
                       ,initialize: initialize
                       ,toList: toList
                       ,fromList: fromList
+                      ,toCoordinates: toCoordinates
                       ,set: set
                       ,get: get
                       ,getOrFail: getOrFail
@@ -11580,6 +12055,8 @@ Elm.Grid.make = function (_elm) {
                       ,getColumnOrFail: getColumnOrFail
                       ,getColumnOrElse: getColumnOrElse
                       ,inGrid: inGrid
-                      ,map: map};
+                      ,map: map
+                      ,neighborhood: neighborhood
+                      ,neighborhood2: neighborhood2};
    return _elm.Grid.values;
 };</script></head><body><script type="text/javascript">Elm.fullscreen(Elm.Main)</script><noscript></noscript></body></html>

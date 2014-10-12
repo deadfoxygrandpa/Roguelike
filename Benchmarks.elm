@@ -58,7 +58,7 @@ initialEnemy gen =
     in GameModel.enemy (elem, "enemy", gen)
 
 state : GameModel.State
-state = 
+state =
     let (player, gen') = initialPlayer gen
         (enemy, gen'') = initialEnemy gen'
     in  GameModel.State
@@ -70,7 +70,7 @@ state =
                     gen''
                         |> GameUpdate.reveal
 
-newState state = 
+newState state =
     let player = state.player
         player' = {player| health <- player.health - 1}
     in  {state| player <- player'}
@@ -91,13 +91,17 @@ maps =
                   , (20, 20)
                   , (20, 30)
                   , (30, 30)
-                  ]                
+                  ]
+
+mapElements : [Element]
+mapElements = map render2 maps
 
 main = Benchmark.run [ Benchmark.logic "new state" (uncurry stateTest) [(500, Either.Left state), (500, Either.Right state.player)]
                      , Benchmark.render "alternate render maps" render2 maps
                      , Benchmark.logic "alternate render maps - logic" render2 maps
-                     , Benchmark.render "render maps" render maps                     
-                     , Benchmark.logic "render maps - logic" render maps                     
+                     , Benchmark.render "render maps" render maps
+                     , Benchmark.logic "render maps - logic" render maps
+                     , Benchmark.render "draw prerendered maps" identity mapElements
                      ]
 
 -- rendering information pulled from GameView for modification
@@ -123,13 +127,16 @@ render level =
         row mkTile (n, tiles) = let tiles' = zip [0..level.size.width - 1] tiles
                                     makeTile (n', t) = move (xOffset n', yOffset n) <| mkTile t
                                 in  map makeTile tiles'
-    in mkLayer grid (row tile)                     
+    in layers [mkLayer grid (row tile), mkLayer grid (row tileOverlay)]
 
 render2 : Grid.Grid GameModel.Tile -> Element
 render2 level =
     let grid = Grid.toList level
         (w, h) = (level.size.width * xScale, level.size.height * yScale)
-    in mkLayer grid (row w h tile) level.size.width level.size.height
+        (w', h') = (level.size.width, level.size.height)
+        bg = mkLayer grid (row w' h' tile) level.size.height (w, h)
+        overlay = mkLayer grid (row w' h' tileOverlay) level.size.height (w, h)
+    in  layers [bg, overlay]
 
 xScale : Int
 xScale = 15
@@ -145,21 +152,37 @@ tile t =
         GameModel.Door  -> door
         GameModel.Acid  -> acid
 
+tileOverlay : GameModel.Tile -> Form
+tileOverlay t =
+    case t of
+        GameModel.Floor -> floorOverlay
+        GameModel.Wall  -> wallOverlay
+        GameModel.Door  -> doorOverlay
+        GameModel.Acid  -> acidOverlay
+
 floor : Form
-floor = group [ rect (toFloat xScale) (toFloat yScale) |> filled black
-              , guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
-              ]
+floor = rect (toFloat xScale) (toFloat yScale) |> filled black
+
+floorOverlay : Form
+floorOverlay = guy {avatar = "." |> toText |> monospace |> Text.color white |> centered} GameModel.Visible
 
 wall : Form
-wall = group [ rect (toFloat xScale) (toFloat yScale) |> filled grey
-             , guy {avatar = "#" |> toText |> monospace |> Text.color black |> centered} GameModel.Visible
-             ]
+wall = rect (toFloat xScale) (toFloat yScale) |> filled grey
+
+wallOverlay : Form
+wallOverlay = guy {avatar = "#" |> toText |> monospace |> Text.color black |> centered} GameModel.Visible
 
 door : Form
 door = rect (toFloat xScale) (toFloat yScale) |> filled purple
 
+doorOverlay : Form
+doorOverlay = noForm
+
 acid : Form
 acid = rect (toFloat xScale) (toFloat yScale) |> filled darkGreen
+
+acidOverlay : Form
+acidOverlay = noForm
 
 noForm : Form
 noForm = toForm empty
@@ -178,11 +201,11 @@ xOffset : Int -> Int -> Float
 xOffset n w = ((toFloat n) - (toFloat w) / 2) * (toFloat xScale)
 
 yOffset : Int -> Int -> Float
-yOffset n h = ((toFloat n) - (toFloat h) / 2) * (toFloat yScale)        
+yOffset n h = ((toFloat n) - (toFloat h) / 2) * (toFloat yScale)
 
-mkLayer : [[a]] -> ((Int, [a]) -> [Form]) -> Int -> Int -> Element
-mkLayer grid mapRow w h =
-                 let rows  = zip (reverse [0..h - 1]) grid
+mkLayer : [[a]] -> ((Int, [a]) -> [Form]) -> Int -> (Int, Int) -> Element
+mkLayer grid mapRow h' (w, h) =
+                 let rows  = zip (reverse [0..h' - 1]) grid
                      forms = concatMap mapRow rows
                  in  collage (w + xScale) (h + yScale) forms
 

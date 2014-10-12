@@ -84,8 +84,8 @@ main = lift display state
 
 display state =
     let level = fst state
-    in  flow down <| button :: map (\x -> GameView.background x `above` spacer 10 10) [level]
-            --[level |> iterate2 |> iterate2 |> iterate2 |> iterate2 |> iterate |> iterate |> iterate]
+    in  flow down <| button :: map (\x -> GameView.background x `above` spacer 10 10)
+            [level |> iterate2 |> iterate2 |> iterate2 |> iterate2 |> iterate |> iterate |> iterate]
 
 seed : Int
 seed = 2013

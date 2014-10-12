@@ -114,7 +114,7 @@ mainScreen state =
                                                 |> move (location enemy)
                          in  group <| map mkEnemy state.enemies
         grid           = Grid.toList state.level
-        bg             = mkLayer grid (row tile)
+        bg             = background state.level
         pg             = collage (w + xScale) (h + yScale) [player', enemy']
         fogger         = mkLayer (Grid.toList state.explored) (row fogT)
     in  flow down [ layers [bg, pg, fogger]

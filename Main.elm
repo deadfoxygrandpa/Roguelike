@@ -11,12 +11,16 @@ import Generator.Standard
 import GameModel
 import GameUpdate
 import GameView
+import MapGen
 
 port title : String
 port title = "Chimera"
 
 seed : Int
-seed = 2014
+seed = 2015
+
+dimensions : (Int, Int)
+dimensions = (30, 20)
 
 gen : GameModel.Random
 gen = Generator.Standard.generator seed
@@ -43,6 +47,11 @@ initialExplored =
     let grid = Grid.toList initialLevel
     in  map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
 
+setExplored : Grid.Grid GameModel.Tile -> Grid.Grid GameModel.Visibility
+setExplored level = 
+    let grid = Grid.toList level
+    in map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
+
 initialPlayer : GameModel.Random -> (GameModel.Player, GameModel.Random)
 initialPlayer gen =
     let elem = "@"
@@ -65,13 +74,15 @@ initialState : GameModel.State
 initialState = 
     let (player, gen') = initialPlayer gen
         (enemy, gen'') = initialEnemy gen'
+        (firstMap, gen''') = MapGen.randomCave dimensions gen''
+        firstExplored = setExplored firstMap
     in  GameModel.State
                     player
                     [enemy]
-                    initialLevel
-                    initialExplored
+                    firstMap
+                    firstExplored
                     ["you enter the dungeon"]
-                    gen''
+                    gen'''
                         |> GameUpdate.reveal
 
 inputs : Signal GameModel.Input

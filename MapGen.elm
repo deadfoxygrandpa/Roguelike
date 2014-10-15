@@ -80,6 +80,11 @@ iterate2 grid =
         x = map (\coord -> (coord, rule coord)) coords
     in  foldl (\(coord, a) grid -> Grid.set coord a grid) grid x
 
+randomCave : (Int, Int) -> GameModel.Random -> (Grid.Grid GameModel.Tile, GameModel.Random)
+randomCave (w, h) gen =
+    let (bedrock, gen') = randomMap (w, h) gen
+    in  (bedrock |> iterate2 |> iterate2 |> iterate2 |> iterate2 |> iterate |> iterate |> iterate, gen')
+
 main = lift display state
 
 display state =

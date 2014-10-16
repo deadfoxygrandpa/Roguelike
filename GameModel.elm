@@ -26,6 +26,7 @@ type Player = { location : Location
               , coordination : Int
               , power : Int
               , initiative : Int
+              , placed : Bool
               }
 
 type Enemy = { location : Location
@@ -38,7 +39,7 @@ type Enemy = { location : Location
              , coordination : Int
              , power : Int
              , initiative : Int
-
+             , placed : Bool
              }
 
 type Location = Grid.Coordinate
@@ -57,12 +58,12 @@ type Random = Generator.Generator Generator.Standard.Standard
 player : Element -> String -> Random -> (Player, Random)
 player elem name gen =
     let (initiative, gen') = Generator.int32Range (1, 100) gen
-    in  (Player (Grid.Coordinate 2 2) elem name 10 10 10 20 1 50 100 2 initiative, gen')
+    in  (Player (Grid.Coordinate 2 2) elem name 10 10 10 20 1 50 100 2 initiative False, gen')
 
 enemy : Element -> String -> Random -> (Enemy, Random)
 enemy elem name gen = 
     let (initiative, gen') = Generator.int32Range (1, 100) gen
-    in  (Enemy (Grid.Coordinate 14 4) elem name 10 20 1 50 100 2 initiative, gen')
+    in  (Enemy (Grid.Coordinate 14 4) elem name 10 20 1 50 100 2 initiative False, gen')
 
 location : Int -> Int -> Location
 location = Grid.Coordinate
@@ -87,6 +88,27 @@ pathable location state =
             Nothing -> False
             Just Floor  -> True
             Just _  -> False
+
+getRandomPathable : State -> (Location, State)
+getRandomPathable state = 
+  let (x, gen') = Generator.int32Range (1, state.level.size.width) state.generator
+      (y, gen'') = Generator.int32Range (1, state.level.size.height) gen'
+      locn = location x y
+      state' = {state | generator <- gen''}
+  in  case pathable locn state' of
+          True -> (locn, state')
+          False -> getRandomPathable state'
+
+placeEnemy : Enemy -> State -> State
+placeEnemy a state = 
+  let (loc, state') = getRandomPathable state
+  in  {state'| enemies <- {a| location <- loc, placed <- True} :: tail state'.enemies}
+
+placePlayer : State -> State
+placePlayer state = 
+  let (loc, state') = getRandomPathable state
+      player' = state'.player
+  in  {state'| player <- {player'| location <- loc, placed <- True}}
 
 showTile : Tile -> Element
 showTile tile =

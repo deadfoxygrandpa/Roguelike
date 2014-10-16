@@ -83,7 +83,7 @@ initialState =
                     firstExplored
                     ["you enter the dungeon"]
                     gen'''
-                        |> GameUpdate.reveal
+                        |> GameUpdate.placeEntities |> GameUpdate.reveal
 
 inputs : Signal GameModel.Input
 inputs = GameModel.handle <~ Keyboard.lastPressed

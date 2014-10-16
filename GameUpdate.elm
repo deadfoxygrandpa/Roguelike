@@ -8,6 +8,15 @@ import GameModel
 log : String -> GameModel.State -> GameModel.State
 log s state = {state| log <- s :: state.log}
 
+placeEntities : GameModel.State -> GameModel.State
+placeEntities state = 
+  let pstate = if state.player.placed then state else GameModel.placePlayer state
+      unplaced = filter (\enemy -> enemy.placed == False) pstate.enemies
+  in  case unplaced of
+           (enemy::es) -> placeEntities (GameModel.placeEnemy enemy pstate)
+           [enemy]     -> placeEntities (GameModel.placeEnemy enemy pstate)
+           []          -> pstate
+
 update : GameModel.Input -> GameModel.State -> GameModel.State
 update input state =
     let player   = state.player

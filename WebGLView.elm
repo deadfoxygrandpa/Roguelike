@@ -4,6 +4,12 @@ import Math.Vector3 (..)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
 
+-- Higher level API
+
+tile : (Int, Int) -> Entity
+tile (x, y) = entity vertexShader fragmentShader (square (toFloat x, toFloat y) (vec3 1 0 0)) { scale = scale 0.05}
+
+
 -- Create a mesh with two triangles
 
 type Vertex = { position:Vec3, color:Vec3 }
@@ -31,10 +37,9 @@ main : Element
 main = scene
 
 scene : Element
-scene =
-    webgl (400,400)
-    [ entity vertexShader fragmentShader (square (0, 0) (vec3 1 0 0)) { scale = scale 0.1}
-    , entity vertexShader fragmentShader (square (1, 1) (vec3 1 0 0)) { scale = scale 0.1}
+scene = color blue <|
+    webgl (800,800)
+    [ tile (0, 0), tile (0, 1)
     ]
 
 -- Shaders

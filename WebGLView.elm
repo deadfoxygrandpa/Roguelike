@@ -16,7 +16,7 @@ tile (x, y) t =
     let color = case t of
                     GameModel.Wall  -> vec3 0.5 0.5 0.5
                     GameModel.Floor -> vec3 0 0 0
-    in  entity vertexShader fragmentShader (square (toFloat x, toFloat y) color) { scale = scale 0.04}
+    in  entity vertexShader fragmentShader (square (toFloat x, toFloat y) color) { scale = scale 0.04, camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)}
 
 background : Grid.Grid GameModel.Tile -> Element
 background level =
@@ -57,13 +57,13 @@ initialLevel =
                         '#' -> GameModel.Wall
                         '+' -> GameModel.Door
                         '~' -> GameModel.Acid
-        s = [ "####################"
-            , "#        #         #"
-            , "#        #         #"
-            , "#                  #"
-            , "#        #         #"
-            , "#        #         #"
-            , "####################"
+        s = [ "###################"
+            , "#        #        #"
+            , "#        #        #"
+            , "#                 #"
+            , "#        #        #"
+            , "#        #        #"
+            , "###################"
             ]
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
@@ -78,16 +78,17 @@ scene = background initialLevel
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec3, color:Vec3 } {unif | scale:Mat4} { vcolor:Vec3 }
+vertexShader : Shader { attr | position:Vec3, color:Vec3 } {unif | scale:Mat4, camera:Mat4} { vcolor:Vec3 }
 vertexShader = [glsl|
 
 attribute vec3 position;
 attribute vec3 color;
 uniform mat4 scale;
+uniform mat4 camera;
 varying vec3 vcolor;
 
 void main () {
-    gl_Position = scale * vec4(position, 1.0);
+    gl_Position = scale * camera * vec4(position, 1.0);
     vcolor = color;
 }
 

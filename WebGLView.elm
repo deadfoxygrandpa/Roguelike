@@ -1,14 +1,34 @@
 module WebGLView where
 
+import String
+
+import GameModel
+import Grid
+
 import Math.Vector3 (..)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
 
 -- Higher level API
 
-tile : (Int, Int) -> Entity
-tile (x, y) = entity vertexShader fragmentShader (square (toFloat x, toFloat y) (vec3 1 0 0)) { scale = scale 0.05}
+tile : (Int, Int) -> GameModel.Tile -> Entity
+tile (x, y) t =
+    let color = case t of
+                    GameModel.Wall  -> vec3 0.5 0.5 0.5
+                    GameModel.Floor -> vec3 0 0 0
+    in  entity vertexShader fragmentShader (square (toFloat x, toFloat y) color) { scale = scale 0.04}
 
+background : Grid.Grid GameModel.Tile -> Element
+background level =
+    let grid = Grid.toList level
+        (w, h) = (level.size.width, level.size.height)
+        (w' , h')= (w // 2, h // 2)
+
+        row : Int -> [GameModel.Tile] -> [Entity]
+        row y ts = map (\(t, x) -> tile (x, y) t) <| zip ts [-w'..w' + 1]
+
+        tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
+    in  webgl (600, 600) tiles
 
 -- Create a mesh with two triangles
 
@@ -19,16 +39,33 @@ square (x, y) color =
     let x' = 2 * x
         y' = 2 * y in
     [ ( Vertex (vec3 (x' - 1) (y' - 1) 0) color
-      , Vertex (vec3 (x' + 1) (y' + 1) 0) (vec3 0 1 0)
+      , Vertex (vec3 (x' + 1) (y' + 1) 0) color
       , Vertex (vec3 (x' - 1) (y' + 1) 0) color
       )
     , ( Vertex (vec3 (x' - 1) (y' - 1) 0) color
-      , Vertex (vec3 (x' + 1) (y' + 1) 0) (vec3 0 1 0)
+      , Vertex (vec3 (x' + 1) (y' + 1) 0) color
       , Vertex (vec3 (x' + 1) (y' - 1) 0) color
       )
     ]
 
 -- Create the scene
+
+initialLevel : Grid.Grid GameModel.Tile
+initialLevel =
+    let toTile c = case c of
+                        ' ' -> GameModel.Floor
+                        '#' -> GameModel.Wall
+                        '+' -> GameModel.Door
+                        '~' -> GameModel.Acid
+        s = [ "####################"
+            , "#        #         #"
+            , "#        #         #"
+            , "#                  #"
+            , "#        #         #"
+            , "#        #         #"
+            , "####################"
+            ]
+    in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
 scale : Float -> Mat4
 scale n = makeScale (vec3 n n n)
@@ -37,10 +74,7 @@ main : Element
 main = scene
 
 scene : Element
-scene = color blue <|
-    webgl (800,800)
-    [ tile (0, 0), tile (0, 1)
-    ]
+scene = background initialLevel
 
 -- Shaders
 

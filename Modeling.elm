@@ -1,6 +1,7 @@
 module Modeling where
 
 import Math.Vector3 (..)
+import Math.Vector4 (..)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
 
@@ -34,7 +35,7 @@ shape =
                  ++ quad (-0.8, 0.3) (0.8, 0.3) (-0.8, 0.2) (0.8, 0.2) black'
                  ++ quad (-0.8, -0.2) (0.8, -0.2) (-0.8, -0.3) (0.8, -0.3) black'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) grey'
-    in  entity vertexShader fragmentShader triangles {  }
+    in  entity circleVertexShader circleFragmentShader triangles {  }
 
 scene = webgl (400, 400) [shape]
 
@@ -64,6 +65,43 @@ varying vec3 vcolor;
 
 void main () {
     gl_FragColor = vec4(vcolor, 1.0);
+}
+
+|]
+
+
+circleVertexShader : Shader { attr | position:Vec3, color:Vec3 } {} { vcolor:Vec3, pos:Vec4 }
+circleVertexShader = [glsl|
+
+attribute vec3 position;
+attribute vec3 color;
+varying vec3 vcolor;
+varying vec4 pos;
+
+void main () {
+    gl_Position = vec4(position, 1.0);
+    vcolor = color;
+    pos = gl_Position;
+}
+
+|]
+
+circleFragmentShader : Shader {} u { vcolor:Vec3, pos:Vec4 }
+circleFragmentShader = [glsl|
+
+precision mediump float;
+varying vec3 vcolor;
+varying vec4 pos;
+
+void main () {
+    vec4 center = vec4(0.0, 0.0, 0.0, 1.0);
+    float dis = distance(center, pos);
+
+    if (dis < 0.5) {
+        gl_FragColor = vec4(vcolor, 1.0);
+    } else {
+        gl_FragColor = vec4(vcolor, 0.0);
+    }
 }
 
 |]

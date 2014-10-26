@@ -9,14 +9,38 @@ import Math.Vector3 (..)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
 
+type Vertex = { position:Vec3, offset:Vec3, color:Vec3 }
+type Point = (Float, Float)
+
 -- Higher level API
+
+camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
+perspective = makePerspective 90 1 1 1
 
 tile : (Int, Int) -> GameModel.Tile -> Entity
 tile (x, y) t =
-    let color = case t of
-                    GameModel.Wall  -> vec3 0.5 0.5 0.5
-                    GameModel.Floor -> vec3 0 0 0
-    in  entity vertexShader fragmentShader (square (toFloat x, toFloat y) color) { scale = scale 0.04, camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)}
+    case t of
+        GameModel.Floor -> floorTile <| vec3 (toFloat x) (toFloat y) 0.0
+        GameModel.Wall  -> wallTile <| vec3 (toFloat x) (toFloat y) 0.0
+
+wallTile : Vec3 -> Entity
+wallTile offset =
+    let black' = fromRGB black
+        grey' = fromRGB grey
+        triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) offset black'
+                 ++ quad (0.2, 0.5) (0.3, 0.5) (0.05, -0.5) (0.15, -0.5) offset black'
+                 ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) offset black'
+                 ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) offset black'
+                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset grey'
+    in  entity vertexShader fragmentShader triangles {scale = scale 0.04, camera = camera, perspective = perspective}
+
+floorTile : Vec3 -> Entity
+floorTile offset =
+    let black' = fromRGB black
+        white' = fromRGB white
+        triangles = quad (-0.1, 0.1) (0.1, 0.1) (-0.1, -0.1) (0.1, -0.1) offset white'
+                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
+    in  entity vertexShader fragmentShader triangles {scale = scale 0.04, camera = camera, perspective = perspective}
 
 background : Grid.Grid GameModel.Tile -> Element
 background level =
@@ -29,24 +53,6 @@ background level =
 
         tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
     in  webgl (600, 600) tiles
-
--- Create a mesh with two triangles
-
-type Vertex = { position:Vec3, color:Vec3 }
-
-square : (Float, Float) -> Vec3 -> [Triangle Vertex]
-square (x, y) color =
-    let x' = 2 * x
-        y' = 2 * y in
-    [ ( Vertex (vec3 (x' - 1) (y' - 1) 0) color
-      , Vertex (vec3 (x' + 1) (y' + 1) 0) color
-      , Vertex (vec3 (x' - 1) (y' + 1) 0) color
-      )
-    , ( Vertex (vec3 (x' - 1) (y' - 1) 0) color
-      , Vertex (vec3 (x' + 1) (y' + 1) 0) color
-      , Vertex (vec3 (x' + 1) (y' - 1) 0) color
-      )
-    ]
 
 -- Create the scene
 
@@ -78,17 +84,20 @@ scene = background initialLevel
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec3, color:Vec3 } {unif | scale:Mat4, camera:Mat4} { vcolor:Vec3 }
+vertexShader : Shader { attr | position:Vec3, offset:Vec3, color:Vec3 } {unif | scale:Mat4, camera:Mat4, perspective:Mat4} { vcolor:Vec3 }
 vertexShader = [glsl|
 
 attribute vec3 position;
+attribute vec3 offset;
 attribute vec3 color;
 uniform mat4 scale;
 uniform mat4 camera;
+uniform mat4 perspective;
 varying vec3 vcolor;
 
 void main () {
-    gl_Position = scale * camera * vec4(position, 1.0);
+    vec3 stuff = offset + position;
+    gl_Position = scale * perspective * camera * vec4(stuff, 1.0);
     vcolor = color;
 }
 
@@ -105,3 +114,23 @@ void main () {
 }
 
 |]
+
+-- Shape constructors
+
+quad : Point -> Point -> Point -> Point -> Vec3 -> Vec3 -> [Triangle Vertex]
+quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
+    [ ( Vertex (vec3 x1 y1 0) offset color
+      , Vertex (vec3 x2 y2 0) offset color
+      , Vertex (vec3 x3 y3 0) offset color
+      )
+    , ( Vertex (vec3 x3 y3 0) offset color
+      , Vertex (vec3 x2 y2 0) offset color
+      , Vertex (vec3 x4 y4 0) offset color
+      )
+    ]
+
+fromRGB : Color -> Vec3
+fromRGB color =
+    let {red, green, blue, alpha} = toRgb color
+        div x = toFloat x / 255
+    in  vec3 (div red) (div green) (div blue)

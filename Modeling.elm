@@ -35,9 +35,9 @@ shape =
                  ++ quad (-0.8, 0.3) (0.8, 0.3) (-0.8, 0.2) (0.8, 0.2) black'
                  ++ quad (-0.8, -0.2) (0.8, -0.2) (-0.8, -0.3) (0.8, -0.3) black'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) grey'
-    in  entity circleVertexShader circleFragmentShader triangles {  }
+    in  entity vertexShader fragmentShader triangles {}
 
-scene = webgl (400, 400) [shape]
+scene = flow right [webgl (400, 400) [shape], spacer 30 30, webgl (15, 20) [shape]]
 
 main = scene
 
@@ -100,7 +100,7 @@ void main () {
     if (dis < 0.5) {
         gl_FragColor = vec4(vcolor, 1.0);
     } else {
-        gl_FragColor = vec4(vcolor, 0.0);
+        discard;
     }
 }
 

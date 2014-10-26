@@ -30,12 +30,12 @@ shape : Entity
 shape =
     let black' = fromRGB black
         grey' = fromRGB grey
-        triangles = quad (-0.2, 0.8) (-0.1, 0.8) (-0.4, -0.8) (-0.3, -0.8) black'
-                 ++ quad (0.3, 0.8) (0.4, 0.8) (0.1, -0.8) (0.2, -0.8) black'
-                 ++ quad (-0.8, 0.3) (0.8, 0.3) (-0.8, 0.2) (0.8, 0.2) black'
-                 ++ quad (-0.8, -0.2) (0.8, -0.2) (-0.8, -0.3) (0.8, -0.3) black'
+        triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) black'
+                 ++ quad (0.2, 0.5) (0.3, 0.5) (0.05, -0.5) (0.15, -0.5) black'
+                 ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) black'
+                 ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) black'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) grey'
-    in  entity vertexShader fragmentShader triangles {}
+    in  entity basicVertexShader basicFragmentShader triangles {}
 
 scene = flow right [webgl (400, 400) [shape], spacer 30 30, webgl (15, 20) [shape]]
 
@@ -43,8 +43,8 @@ main = scene
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec3, color:Vec3 } {} { vcolor:Vec3 }
-vertexShader = [glsl|
+basicVertexShader : Shader { attr | position:Vec3, color:Vec3 } {} { vcolor:Vec3 }
+basicVertexShader = [glsl|
 
 attribute vec3 position;
 attribute vec3 color;
@@ -57,8 +57,8 @@ void main () {
 
 |]
 
-fragmentShader : Shader {} u { vcolor:Vec3 }
-fragmentShader = [glsl|
+basicFragmentShader : Shader {} u { vcolor:Vec3 }
+basicFragmentShader = [glsl|
 
 precision mediump float;
 varying vec3 vcolor;
@@ -105,3 +105,16 @@ void main () {
 }
 
 |]
+
+-- Completed Tiles
+
+wallTile : Entity
+wallTile =
+    let black' = fromRGB black
+        grey' = fromRGB grey
+        triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) black'
+                 ++ quad (0.2, 0.5) (0.3, 0.5) (0.05, -0.5) (0.15, -0.5) black'
+                 ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) black'
+                 ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) black'
+                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) grey'
+    in  entity basicVertexShader basicFragmentShader triangles {}

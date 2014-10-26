@@ -29,12 +29,9 @@ fromRGB color =
 shape : Entity
 shape =
     let black' = fromRGB black
-        grey' = fromRGB grey
-        triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) black'
-                 ++ quad (0.2, 0.5) (0.3, 0.5) (0.05, -0.5) (0.15, -0.5) black'
-                 ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) black'
-                 ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) black'
-                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) grey'
+        white' = fromRGB white
+        triangles = quad (-0.1, 0.1) (0.1, 0.1) (-0.1, -0.1) (0.1, -0.1) white'
+                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) black'
     in  entity basicVertexShader basicFragmentShader triangles {}
 
 scene = flow right [webgl (400, 400) [shape], spacer 30 30, webgl (15, 20) [shape]]
@@ -117,4 +114,12 @@ wallTile =
                  ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) black'
                  ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) black'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) grey'
+    in  entity basicVertexShader basicFragmentShader triangles {}
+
+floorTile : Entity
+floorTile =
+    let black' = fromRGB black
+        white' = fromRGB white
+        triangles = quad (-0.1, 0.1) (0.1, 0.1) (-0.1, -0.1) (0.1, -0.1) white'
+                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) black'
     in  entity basicVertexShader basicFragmentShader triangles {}

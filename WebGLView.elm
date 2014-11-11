@@ -96,7 +96,7 @@ uniform mat4 perspective;
 varying vec3 vcolor;
 
 void main () {
-    vec3 stuff = offset + position;
+    vec3 stuff = (2.0 * offset) + position;
     gl_Position = scale * perspective * camera * vec4(stuff, 1.0);
     vcolor = color;
 }

@@ -21,8 +21,7 @@ xScale = 15
 yScale : Float
 yScale = 20
 
-camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
-perspective = makePerspective 90 1 1 1
+perspective = makeOrtho2D -19 19 -7 7
 
 tile : (Int, Int) -> GameModel.Tile -> Entity
 tile (x, y) t =
@@ -39,7 +38,7 @@ wallTile offset =
                  ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) offset black'
                  ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) offset black'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset grey'
-    in  entity vertexShader fragmentShader triangles {scale = scale (1/19) (1/7), camera = camera, perspective = perspective}
+    in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
 floorTile : Vec3 -> Entity
 floorTile offset =
@@ -47,7 +46,7 @@ floorTile offset =
         white' = fromRGB white
         triangles = quad (-0.125, 0.125) (0.125, 0.125) (-0.125, -0.125) (0.125, -0.125) offset white'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShader fragmentShader triangles {scale = scale (1/19) (1/7), camera = camera, perspective = perspective}
+    in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
 background : Grid.Grid GameModel.Tile -> Element
 background level =
@@ -82,9 +81,6 @@ initialLevel =
             ]
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
-scale : Float -> Float -> Mat4
-scale x y = makeScale (vec3 x y 1)
-
 main : Element
 main = scene
 
@@ -93,20 +89,18 @@ scene = flow down [background initialLevel, spacer 10 10, GameView.background in
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec3, offset:Vec3, color:Vec3 } {unif | scale:Mat4, camera:Mat4, perspective:Mat4} { vcolor:Vec3 }
+vertexShader : Shader { attr | position:Vec3, offset:Vec3, color:Vec3 } {unif | perspective:Mat4} { vcolor:Vec3 }
 vertexShader = [glsl|
 
 attribute vec3 position;
 attribute vec3 offset;
 attribute vec3 color;
-uniform mat4 scale;
-uniform mat4 camera;
 uniform mat4 perspective;
 varying vec3 vcolor;
 
 void main () {
     vec3 stuff = (2.0 * offset) + position;
-    gl_Position = scale * perspective * camera * vec4(stuff, 1.0);
+    gl_Position = perspective * vec4(stuff, 1.0);
     vcolor = color;
 }
 

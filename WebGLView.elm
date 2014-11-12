@@ -3,6 +3,7 @@ module WebGLView where
 import String
 
 import GameModel
+import GameView
 import Grid
 
 import Math.Vector3 (..)
@@ -13,6 +14,12 @@ type Vertex = { position:Vec3, offset:Vec3, color:Vec3 }
 type Point = (Float, Float)
 
 -- Higher level API
+
+xScale : Float
+xScale = 15
+
+yScale : Float
+yScale = 20
 
 camera = makeLookAt (vec3 0 0 1) (vec3 0 0 0) (vec3 0 1 0)
 perspective = makePerspective 90 1 1 1
@@ -32,7 +39,7 @@ wallTile offset =
                  ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) offset black'
                  ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) offset black'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset grey'
-    in  entity vertexShader fragmentShader triangles {scale = scale 0.04, camera = camera, perspective = perspective}
+    in  entity vertexShader fragmentShader triangles {scale = scale (1/19) (1/7), camera = camera, perspective = perspective}
 
 floorTile : Vec3 -> Entity
 floorTile offset =
@@ -40,7 +47,7 @@ floorTile offset =
         white' = fromRGB white
         triangles = quad (-0.1, 0.1) (0.1, 0.1) (-0.1, -0.1) (0.1, -0.1) offset white'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShader fragmentShader triangles {scale = scale 0.04, camera = camera, perspective = perspective}
+    in  entity vertexShader fragmentShader triangles {scale = scale (1/19) (1/7), camera = camera, perspective = perspective}
 
 background : Grid.Grid GameModel.Tile -> Element
 background level =
@@ -52,7 +59,9 @@ background level =
         row y ts = map (\(t, x) -> tile (x, y) t) <| zip ts [-w'..w' + 1]
 
         tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
-    in  webgl (600, 600) tiles
+        w'' = (toFloat w) * xScale |> round
+        h'' = (toFloat h) * yScale |> round
+    in  color black <| webgl (w'', h'') tiles
 
 -- Create the scene
 
@@ -73,14 +82,14 @@ initialLevel =
             ]
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
-scale : Float -> Mat4
-scale n = makeScale (vec3 n n n)
+scale : Float -> Float -> Mat4
+scale x y = makeScale (vec3 x y 1)
 
 main : Element
 main = scene
 
 scene : Element
-scene = background initialLevel
+scene = flow down [background initialLevel, spacer 10 10, GameView.background initialLevel]
 
 -- Shaders
 

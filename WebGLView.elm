@@ -45,7 +45,7 @@ floorTile : Vec3 -> Entity
 floorTile offset =
     let black' = fromRGB black
         white' = fromRGB white
-        triangles = quad (-0.1, 0.1) (0.1, 0.1) (-0.1, -0.1) (0.1, -0.1) offset white'
+        triangles = quad (-0.125, 0.125) (0.125, 0.125) (-0.125, -0.125) (0.125, -0.125) offset white'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShader fragmentShader triangles {scale = scale (1/19) (1/7), camera = camera, perspective = perspective}
 

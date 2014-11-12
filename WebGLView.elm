@@ -13,6 +13,9 @@ import Graphics.WebGL (..)
 type Vertex = { position:Vec3, offset:Vec3, color:Vec3 }
 type Point = (Float, Float)
 
+even : Int -> Bool
+even n = n % 2 == 0
+
 -- Higher level API
 
 xScale : Float
@@ -21,16 +24,14 @@ xScale = 15
 yScale : Float
 yScale = 20
 
-perspective = makeOrtho2D -19 19 -7 7
-
-tile : (Int, Int) -> GameModel.Tile -> Entity
-tile (x, y) t =
+tile : (Int, Int) -> Mat4 -> GameModel.Tile -> Entity
+tile (x, y) perspective t =
     case t of
-        GameModel.Floor -> floorTile <| vec3 (toFloat x) (toFloat y) 0.0
-        GameModel.Wall  -> wallTile <| vec3 (toFloat x) (toFloat y) 0.0
+        GameModel.Floor -> floorTile perspective <| vec3 (toFloat x) (toFloat y) 0.0
+        GameModel.Wall  -> wallTile perspective <| vec3 (toFloat x) (toFloat y) 0.0
 
-wallTile : Vec3 -> Entity
-wallTile offset =
+wallTile : Mat4 -> Vec3 -> Entity
+wallTile perspective offset =
     let black' = fromRGB black
         grey' = fromRGB grey
         triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) offset black'
@@ -40,8 +41,8 @@ wallTile offset =
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset grey'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
-floorTile : Vec3 -> Entity
-floorTile offset =
+floorTile : Mat4 -> Vec3 -> Entity
+floorTile perspective offset =
     let black' = fromRGB black
         white' = fromRGB white
         triangles = quad (-0.125, 0.125) (0.125, 0.125) (-0.125, -0.125) (0.125, -0.125) offset white'
@@ -53,9 +54,16 @@ background level =
     let grid = Grid.toList level
         (w, h) = (level.size.width, level.size.height)
         (w' , h')= (w // 2, h // 2)
+        (left, right) = case even w of
+                            True  -> (toFloat (-w - 1), toFloat w - 1)
+                            False -> (toFloat (-w), toFloat w)
+        (top, bottom) = case even h of
+                            True  -> (toFloat (-h - 1), toFloat h - 1)
+                            False -> (toFloat (-h), toFloat h)
+        perspective = makeOrtho2D left right top bottom
 
         row : Int -> [GameModel.Tile] -> [Entity]
-        row y ts = map (\(t, x) -> tile (x, y) t) <| zip ts [-w'..w' + 1]
+        row y ts = map (\(t, x) -> tile (x, y) perspective t) <| zip ts [-w'..w' + 1]
 
         tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
         w'' = (toFloat w) * xScale |> round

@@ -49,6 +49,12 @@ floorTile perspective offset =
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
+fogTile : Mat4 -> Vec3 -> Entity
+fogTile perspective offset =
+    let black' = fromRGB black
+        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
+    in  entity vertexShader fragmentShader triangles {perspective = perspective}
+
 background : Grid.Grid GameModel.Tile -> Element
 background level =
     let grid = Grid.toList level
@@ -68,7 +74,7 @@ background level =
         tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
         w'' = (toFloat w) * xScale |> round
         h'' = (toFloat h) * yScale |> round
-    in  color black <| webgl (w'', h'') tiles
+    in  webgl (w'', h'') tiles
 
 -- Create the scene
 

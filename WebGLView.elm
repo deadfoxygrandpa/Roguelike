@@ -1,6 +1,7 @@
 module WebGLView where
 
 import String
+import Http (..)
 
 import GameModel
 import GameView
@@ -16,6 +17,12 @@ type Point = (Float, Float)
 even : Int -> Bool
 even n = n % 2 == 0
 
+responseToMaybe : Response a -> Maybe a
+responseToMaybe response =
+    case response of
+        Success a -> Just a
+        _         -> Nothing
+
 -- Higher level API
 
 xScale : Float
@@ -24,14 +31,14 @@ xScale = 15
 yScale : Float
 yScale = 20
 
-tile : (Int, Int) -> Mat4 -> GameModel.Tile -> Entity
-tile (x, y) perspective t =
+tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
+tile (x, y) perspective texture t =
     case t of
-        GameModel.Floor -> floorTile perspective <| vec3 (toFloat x) (toFloat y) 0.0
-        GameModel.Wall  -> wallTile perspective <| vec3 (toFloat x) (toFloat y) 0.0
+        GameModel.Floor -> floorTile texture perspective <| vec3 (toFloat x) (toFloat y) 0.0
+        GameModel.Wall  -> wallTile texture perspective <| vec3 (toFloat x) (toFloat y) 0.0
 
-wallTile : Mat4 -> Vec3 -> Entity
-wallTile perspective offset =
+wallTile : Texture -> Mat4 -> Vec3 -> Entity
+wallTile texture perspective offset =
     let black' = fromRGB black
         grey' = fromRGB grey
         triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) offset black'
@@ -41,21 +48,21 @@ wallTile perspective offset =
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset grey'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
-floorTile : Mat4 -> Vec3 -> Entity
-floorTile perspective offset =
+floorTile : Texture -> Mat4 -> Vec3 -> Entity
+floorTile texture perspective offset =
     let black' = fromRGB black
         white' = fromRGB white
         triangles = quad (-0.125, 0.125) (0.125, 0.125) (-0.125, -0.125) (0.125, -0.125) offset white'
                  ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
-fogTile : Mat4 -> Vec3 -> Entity
-fogTile perspective offset =
+fogTile : Texture -> Mat4 -> Vec3 -> Entity
+fogTile texture perspective offset =
     let black' = fromRGB black
         triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
-background : Grid.Grid GameModel.Tile -> Element
+background : Grid.Grid GameModel.Tile -> Signal Element
 background level =
     let grid = Grid.toList level
         (w, h) = (level.size.width, level.size.height)
@@ -68,13 +75,21 @@ background level =
                             False -> (toFloat (-h), toFloat h)
         perspective = makeOrtho2D left right top bottom
 
-        row : Int -> [GameModel.Tile] -> [Entity]
-        row y ts = map (\(t, x) -> tile (x, y) perspective t) <| zip ts [-w'..w' + 1]
+        texture : Signal (Maybe Texture)
+        texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
 
-        tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
+        row : Texture -> Int -> [GameModel.Tile] -> [Entity]
+        row texture y ts = map (\(t, x) -> tile (x, y) perspective texture t) <| zip ts [-w'..w' + 1]
+
+        tiles : Maybe Texture -> [Entity]
+        tiles texture = case texture of
+            Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid [-h'..h' + 1]
+            Nothing  -> []
+
         w'' = (toFloat w) * xScale |> round
         h'' = (toFloat h) * yScale |> round
-    in  webgl (w'', h'') tiles
+
+    in  webgl (w'', h'') <~ (tiles <~ texture)
 
 -- Create the scene
 
@@ -95,11 +110,11 @@ initialLevel =
             ]
     in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
 
-main : Element
-main = scene
+main : Signal Element
+main = scene <~ background initialLevel
 
-scene : Element
-scene = flow down [background initialLevel, spacer 10 10, GameView.background initialLevel]
+scene : Element -> Element
+scene bg = flow down [bg, spacer 10 10, GameView.background initialLevel]
 
 -- Shaders
 

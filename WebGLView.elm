@@ -38,17 +38,18 @@ tile (x, y) perspective texture t =
         GameModel.Floor -> floorTile texture perspective <| vec3 (toFloat x) (toFloat y) 0.0
         GameModel.Wall  -> wallTile texture perspective <| vec3 (toFloat x) (toFloat y) 0.0
 
-wallTile : Texture -> Mat4 -> Vec3 -> Entity
-wallTile texture perspective offset =
-    let black' = fromRGB black
+texturedTile : Int -> Int -> Texture -> Mat4 -> Vec3 -> Entity
+texturedTile x y texture perspective offset =
+    let (x', y') = (toFloat x, toFloat y)
+        black' = fromRGB black
         triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 3 2 0}
+    in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 x' y' 0}
+
+wallTile : Texture -> Mat4 -> Vec3 -> Entity
+wallTile = texturedTile 3 2
 
 floorTile : Texture -> Mat4 -> Vec3 -> Entity
-floorTile texture perspective offset =
-    let black' = fromRGB black
-        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 14 2 0}
+floorTile = texturedTile 14 2
 
 fogTile : Texture -> Mat4 -> Vec3 -> Entity
 fogTile texture perspective offset =

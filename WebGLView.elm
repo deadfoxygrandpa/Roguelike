@@ -7,11 +7,12 @@ import GameModel
 import GameView
 import Grid
 
+import Math.Vector2 (Vec2, vec2)
 import Math.Vector3 (..)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
 
-type Vertex = { position:Vec3, offset:Vec3, color:Vec3 }
+type Vertex = { position:Vec3, offset:Vec3, color:Vec3, coord:Vec3 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -40,21 +41,14 @@ tile (x, y) perspective texture t =
 wallTile : Texture -> Mat4 -> Vec3 -> Entity
 wallTile texture perspective offset =
     let black' = fromRGB black
-        grey' = fromRGB grey
-        triangles = quad (-0.15, 0.5) (-0.05, 0.5) (-0.3, -0.5) (-0.2, -0.5) offset black'
-                 ++ quad (0.2, 0.5) (0.3, 0.5) (0.05, -0.5) (0.15, -0.5) offset black'
-                 ++ quad (-0.5, 0.2) (0.5, 0.2) (-0.5, 0.1) (0.5, 0.1) offset black'
-                 ++ quad (-0.5, -0.1) (0.5, -0.1) (-0.5, -0.2) (0.5, -0.2) offset black'
-                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset grey'
-    in  entity vertexShader fragmentShader triangles {perspective = perspective}
+        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
+    in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 3 2 0}
 
 floorTile : Texture -> Mat4 -> Vec3 -> Entity
 floorTile texture perspective offset =
     let black' = fromRGB black
-        white' = fromRGB white
-        triangles = quad (-0.125, 0.125) (0.125, 0.125) (-0.125, -0.125) (0.125, -0.125) offset white'
-                 ++ quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShader fragmentShader triangles {perspective = perspective}
+        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
+    in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 14 2 0}
 
 fogTile : Texture -> Mat4 -> Vec3 -> Entity
 fogTile texture perspective offset =
@@ -114,7 +108,7 @@ main : Signal Element
 main = scene <~ background initialLevel
 
 scene : Element -> Element
-scene bg = flow down [bg, spacer 10 10, GameView.background initialLevel]
+scene bg = flow down [color black bg, spacer 10 10, GameView.background initialLevel]
 
 -- Shaders
 
@@ -147,19 +141,54 @@ void main () {
 
 |]
 
+vertexShaderTex : Shader { attr | position:Vec3, offset:Vec3, color:Vec3, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec3, vcoord:Vec2 }
+vertexShaderTex = [glsl|
+
+attribute vec3 position;
+attribute vec3 offset;
+attribute vec3 color;
+attribute vec3 coord;
+uniform mat4 perspective;
+varying vec3 vcolor;
+varying vec2 vcoord;
+
+void main () {
+    vec3 stuff = (2.0 * offset) + position;
+    gl_Position = perspective * vec4(stuff, 1.0);
+    vcolor = color;
+    vcoord = coord.xy;
+}
+
+|]
+
+fragmentShaderTex : Shader {} {unif | texture:Texture, sprite:Vec3} { vcolor:Vec3, vcoord:Vec2 }
+fragmentShaderTex = [glsl|
+
+precision mediump float;
+uniform sampler2D texture;
+uniform vec3 sprite;
+varying vec3 vcolor;
+varying vec2 vcoord;
+
+void main () {
+    vec2 spritecoord = vcoord + sprite.xy;
+    vec2 coord = vec2(spritecoord.x, 16.0 - spritecoord.y) / 16.0;
+    gl_FragColor = texture2D(texture, coord);
+}
+
+|]
+
 -- Shape constructors
 
 quad : Point -> Point -> Point -> Point -> Vec3 -> Vec3 -> [Triangle Vertex]
 quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
-    [ ( Vertex (vec3 x1 y1 0) offset color
-      , Vertex (vec3 x2 y2 0) offset color
-      , Vertex (vec3 x3 y3 0) offset color
-      )
-    , ( Vertex (vec3 x3 y3 0) offset color
-      , Vertex (vec3 x2 y2 0) offset color
-      , Vertex (vec3 x4 y4 0) offset color
-      )
-    ]
+    let topLeft     = Vertex (vec3 x1 y1 0) offset color (vec3 0 0 0)
+        topRight    = Vertex (vec3 x2 y2 0) offset color (vec3 1 0 0)
+        bottomLeft  = Vertex (vec3 x3 y3 0) offset color (vec3 0 1 0)
+        bottomRight = Vertex (vec3 x4 y4 0) offset color (vec3 1 1 0)
+    in  [ ( topLeft, topRight, bottomLeft)
+        , ( bottomLeft, topRight, bottomRight)
+        ]
 
 fromRGB : Color -> Vec3
 fromRGB color =

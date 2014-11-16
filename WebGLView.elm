@@ -3,6 +3,7 @@ module WebGLView where
 import String
 import Text
 import Http (..)
+import Maybe (isJust)
 
 import GameModel
 import GameUpdate
@@ -31,6 +32,13 @@ responseToMaybe response =
         Success a -> Just a
         _         -> Nothing
 
+justs : [Maybe a] -> [a]
+justs ms =
+    let js = filter isJust ms
+        just m = case m of
+                    Just x -> x
+    in  map just js
+
 -- Higher level API
 
 texture : Signal (Maybe Texture)
@@ -47,6 +55,13 @@ tile (x, y) perspective texture t =
     case t of
         GameModel.Floor -> floorTile texture perspective <| vec2 (toFloat x) (toFloat y)
         GameModel.Wall  -> wallTile texture perspective <| vec2 (toFloat x) (toFloat y)
+
+fogTiles : (Int, Int) -> Mat4 -> GameModel.Visibility -> Maybe Entity
+fogTiles (x, y) perspective t =
+    case t of
+        GameModel.Unexplored -> Just <| fogTile perspective <| vec2 (toFloat x) (toFloat y)
+        GameModel.Explored   -> Nothing --Just <| exploredTile perspective <| vec2 (toFloat x) (toFloat y)
+        GameModel.Visible    -> Nothing
 
 texturedTile : Int -> Int -> Texture -> Mat4 -> Vec2 -> Entity
 texturedTile x y texture perspective offset =
@@ -69,6 +84,29 @@ floorTile = texturedTile 14 2
 
 fogTile : Mat4 -> Vec2 -> Entity
 fogTile = coloredTile black
+
+exploredTile : Mat4 -> Vec2 -> Entity
+exploredTile = coloredTile (rgba 0 0 0 0.7)
+
+fogger : Grid.Grid GameModel.Visibility -> [Entity]
+fogger level =
+    let grid = Grid.toList level
+        (w, h) = (level.size.width, level.size.height)
+        (w' , h')= (w // 2, h // 2)
+        (left, right) = case even w of
+                            True  -> (toFloat (-w - 1), toFloat w - 1)
+                            False -> (toFloat (-w), toFloat w)
+        (top, bottom) = case even h of
+                            True  -> (toFloat (-h - 1), toFloat h - 1)
+                            False -> (toFloat (-h), toFloat h)
+        perspective = makeOrtho2D left right top bottom
+
+        row : Int -> [GameModel.Visibility] -> [Entity]
+        row y ts = justs <| map (\(t, x) -> fogTiles (x, y) perspective t) <| zip ts [-w'..w' + 1]
+
+        tiles : [Entity]
+        tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
+    in  tiles
 
 background : Grid.Grid GameModel.Tile -> Maybe Texture -> ((Int, Int), [Entity])
 background level texture =
@@ -102,7 +140,8 @@ display state = display' <~ state ~ texture
 display' : GameModel.State -> Maybe Texture -> Element
 display' state texture =
     let (dimensions, bg) = background state.level texture
-    in  color black <| webgl dimensions bg
+        fog = fogger state.explored
+    in  color black <| webgl dimensions (fog ++ bg)
 
 -- Shaders
 

@@ -6,7 +6,7 @@
     "exposed-modules": [],
     "elm-version": "0.13",
     "dependencies": {
-        "johnpmayer/elm-webgl": "0.1.1",
+        "johnpmayer/elm-webgl": "0.1.2",
         "jcollard/generator": "0.4",
         "johnpmayer/elm-linear-algebra": "1.0.1"
     },

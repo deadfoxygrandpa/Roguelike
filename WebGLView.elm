@@ -12,13 +12,14 @@ import Grid
 
 import Math.Vector2 (Vec2, vec2)
 import Math.Vector3 (..)
+import Math.Vector4 (Vec4, vec4)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
 
 import Generator
 import Generator.Standard
 
-type Vertex = { position:Vec3, offset:Vec3, color:Vec3, coord:Vec3 }
+type Vertex = { position:Vec3, offset:Vec3, color:Vec4, coord:Vec3 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -54,17 +55,20 @@ texturedTile x y texture perspective offset =
         triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 x' y' 0}
 
+coloredTile : Color -> Mat4 -> Vec3 -> Entity
+coloredTile color perspective offset =
+    let color' = fromRGB color
+        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset color'
+    in  entity vertexShader fragmentShader triangles {perspective = perspective}
+
 wallTile : Texture -> Mat4 -> Vec3 -> Entity
 wallTile = texturedTile 3 2
 
 floorTile : Texture -> Mat4 -> Vec3 -> Entity
 floorTile = texturedTile 14 2
 
-fogTile : Texture -> Mat4 -> Vec3 -> Entity
-fogTile texture perspective offset =
-    let black' = fromRGB black
-        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShader fragmentShader triangles {perspective = perspective}
+fogTile : Mat4 -> Vec3 -> Entity
+fogTile = coloredTile black
 
 background : Grid.Grid GameModel.Tile -> Maybe Texture -> ((Int, Int), [Entity])
 background level texture =
@@ -102,14 +106,14 @@ display' state texture =
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec3, offset:Vec3, color:Vec3 } {unif | perspective:Mat4} { vcolor:Vec3 }
+vertexShader : Shader { attr | position:Vec3, offset:Vec3, color:Vec4 } {unif | perspective:Mat4} { vcolor:Vec4 }
 vertexShader = [glsl|
 
 attribute vec3 position;
 attribute vec3 offset;
-attribute vec3 color;
+attribute vec4 color;
 uniform mat4 perspective;
-varying vec3 vcolor;
+varying vec4 vcolor;
 
 void main () {
     vec3 stuff = (2.0 * offset) + position;
@@ -119,27 +123,27 @@ void main () {
 
 |]
 
-fragmentShader : Shader {} u { vcolor:Vec3 }
+fragmentShader : Shader {} u { vcolor:Vec4 }
 fragmentShader = [glsl|
 
 precision mediump float;
-varying vec3 vcolor;
+varying vec4 vcolor;
 
 void main () {
-    gl_FragColor = vec4(vcolor, 1.0);
+    gl_FragColor = vcolor;
 }
 
 |]
 
-vertexShaderTex : Shader { attr | position:Vec3, offset:Vec3, color:Vec3, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec3, vcoord:Vec2 }
+vertexShaderTex : Shader { attr | position:Vec3, offset:Vec3, color:Vec4, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec4, vcoord:Vec2 }
 vertexShaderTex = [glsl|
 
 attribute vec3 position;
 attribute vec3 offset;
-attribute vec3 color;
+attribute vec4 color;
 attribute vec3 coord;
 uniform mat4 perspective;
-varying vec3 vcolor;
+varying vec4 vcolor;
 varying vec2 vcoord;
 
 void main () {
@@ -151,13 +155,13 @@ void main () {
 
 |]
 
-fragmentShaderTex : Shader {} {unif | texture:Texture, sprite:Vec3} { vcolor:Vec3, vcoord:Vec2 }
+fragmentShaderTex : Shader {} {unif | texture:Texture, sprite:Vec3} { vcolor:Vec4, vcoord:Vec2 }
 fragmentShaderTex = [glsl|
 
 precision mediump float;
 uniform sampler2D texture;
 uniform vec3 sprite;
-varying vec3 vcolor;
+varying vec4 vcolor;
 varying vec2 vcoord;
 
 void main () {
@@ -170,7 +174,7 @@ void main () {
 
 -- Shape constructors
 
-quad : Point -> Point -> Point -> Point -> Vec3 -> Vec3 -> [Triangle Vertex]
+quad : Point -> Point -> Point -> Point -> Vec3 -> Vec4 -> [Triangle Vertex]
 quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
     let topLeft     = Vertex (vec3 x1 y1 0) offset color (vec3 0 0 0)
         topRight    = Vertex (vec3 x2 y2 0) offset color (vec3 1 0 0)
@@ -180,8 +184,8 @@ quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
         , ( bottomLeft, topRight, bottomRight)
         ]
 
-fromRGB : Color -> Vec3
+fromRGB : Color -> Vec4
 fromRGB color =
     let {red, green, blue, alpha} = toRgb color
         div x = toFloat x / 255
-    in  vec3 (div red) (div green) (div blue)
+    in  vec4 (div red) (div green) (div blue) alpha

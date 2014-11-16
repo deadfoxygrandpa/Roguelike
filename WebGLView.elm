@@ -19,7 +19,7 @@ import Graphics.WebGL (..)
 import Generator
 import Generator.Standard
 
-type Vertex = { position:Vec3, offset:Vec3, color:Vec4, coord:Vec3 }
+type Vertex = { position:Vec2, offset:Vec3, color:Vec4, coord:Vec3 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -106,18 +106,18 @@ display' state texture =
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec3, offset:Vec3, color:Vec4 } {unif | perspective:Mat4} { vcolor:Vec4 }
+vertexShader : Shader { attr | position:Vec2, offset:Vec3, color:Vec4 } {unif | perspective:Mat4} { vcolor:Vec4 }
 vertexShader = [glsl|
 
-attribute vec3 position;
+attribute vec2 position;
 attribute vec3 offset;
 attribute vec4 color;
 uniform mat4 perspective;
 varying vec4 vcolor;
 
 void main () {
-    vec3 stuff = (2.0 * offset) + position;
-    gl_Position = perspective * vec4(stuff, 1.0);
+    vec2 stuff = (2.0 * offset.xy) + position;
+    gl_Position = perspective * vec4(stuff, 0.0, 1.0);
     vcolor = color;
 }
 
@@ -135,10 +135,10 @@ void main () {
 
 |]
 
-vertexShaderTex : Shader { attr | position:Vec3, offset:Vec3, color:Vec4, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec4, vcoord:Vec2 }
+vertexShaderTex : Shader { attr | position:Vec2, offset:Vec3, color:Vec4, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec4, vcoord:Vec2 }
 vertexShaderTex = [glsl|
 
-attribute vec3 position;
+attribute vec2 position;
 attribute vec3 offset;
 attribute vec4 color;
 attribute vec3 coord;
@@ -147,8 +147,8 @@ varying vec4 vcolor;
 varying vec2 vcoord;
 
 void main () {
-    vec3 stuff = (2.0 * offset) + position;
-    gl_Position = perspective * vec4(stuff, 1.0);
+    vec2 stuff = (2.0 * offset.xy) + position;
+    gl_Position = perspective * vec4(stuff, 0.0, 1.0);
     vcolor = color;
     vcoord = coord.xy;
 }
@@ -176,10 +176,10 @@ void main () {
 
 quad : Point -> Point -> Point -> Point -> Vec3 -> Vec4 -> [Triangle Vertex]
 quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
-    let topLeft     = Vertex (vec3 x1 y1 0) offset color (vec3 0 0 0)
-        topRight    = Vertex (vec3 x2 y2 0) offset color (vec3 1 0 0)
-        bottomLeft  = Vertex (vec3 x3 y3 0) offset color (vec3 0 1 0)
-        bottomRight = Vertex (vec3 x4 y4 0) offset color (vec3 1 1 0)
+    let topLeft     = Vertex (vec2 x1 y1) offset color (vec3 0 0 0)
+        topRight    = Vertex (vec2 x2 y2) offset color (vec3 1 0 0)
+        bottomLeft  = Vertex (vec2 x3 y3) offset color (vec3 0 1 0)
+        bottomRight = Vertex (vec2 x4 y4) offset color (vec3 1 1 0)
     in  [ ( topLeft, topRight, bottomLeft)
         , ( bottomLeft, topRight, bottomRight)
         ]

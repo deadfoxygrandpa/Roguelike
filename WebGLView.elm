@@ -1,16 +1,22 @@
 module WebGLView where
 
 import String
+import Text
 import Http (..)
 
 import GameModel
+import GameUpdate
 import GameView
+import MapGen
 import Grid
 
 import Math.Vector2 (Vec2, vec2)
 import Math.Vector3 (..)
 import Math.Matrix4 (..)
 import Graphics.WebGL (..)
+
+import Generator
+import Generator.Standard
 
 type Vertex = { position:Vec3, offset:Vec3, color:Vec3, coord:Vec3 }
 type Point = (Float, Float)
@@ -25,6 +31,9 @@ responseToMaybe response =
         _         -> Nothing
 
 -- Higher level API
+
+texture : Signal (Maybe Texture)
+texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
 
 xScale : Float
 xScale = 15
@@ -57,8 +66,8 @@ fogTile texture perspective offset =
         triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
-background : Grid.Grid GameModel.Tile -> Signal Element
-background level =
+background : Grid.Grid GameModel.Tile -> Maybe Texture -> ((Int, Int), [Entity])
+background level texture =
     let grid = Grid.toList level
         (w, h) = (level.size.width, level.size.height)
         (w' , h')= (w // 2, h // 2)
@@ -69,9 +78,6 @@ background level =
                             True  -> (toFloat (-h - 1), toFloat h - 1)
                             False -> (toFloat (-h), toFloat h)
         perspective = makeOrtho2D left right top bottom
-
-        texture : Signal (Maybe Texture)
-        texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
 
         row : Texture -> Int -> [GameModel.Tile] -> [Entity]
         row texture y ts = map (\(t, x) -> tile (x, y) perspective texture t) <| zip ts [-w'..w' + 1]
@@ -84,32 +90,63 @@ background level =
         w'' = (toFloat w) * xScale |> round
         h'' = (toFloat h) * yScale |> round
 
-    in  webgl (w'', h'') <~ (tiles <~ texture)
+    in  ((w'', h''), (tiles texture))
 
--- Create the scene
+display : Signal GameModel.State -> Signal Element
+display state = display' <~ state ~ texture
 
-initialLevel : Grid.Grid GameModel.Tile
-initialLevel =
-    let toTile c = case c of
-                        ' ' -> GameModel.Floor
-                        '#' -> GameModel.Wall
-                        '+' -> GameModel.Door
-                        '~' -> GameModel.Acid
-        s = [ "###################"
-            , "#        #        #"
-            , "#        #        #"
-            , "#                 #"
-            , "#        #        #"
-            , "#        #        #"
-            , "###################"
-            ]
-    in  Grid.fromList <| map (\x -> map toTile <| String.toList x) s
+display' : GameModel.State -> Maybe Texture -> Element
+display' state texture =
+    let (dimensions, bg) = background state.level texture
+    in  color black <| webgl dimensions bg
 
-main : Signal Element
-main = scene <~ background initialLevel
+-- Demo
 
-scene : Element -> Element
-scene bg = flow down [color black bg, spacer 10 10, GameView.background initialLevel]
+dimensions : (Int, Int)
+dimensions = (30, 20)
+
+gen : GameModel.Random
+gen = Generator.Standard.generator 10023
+
+setExplored : Grid.Grid GameModel.Tile -> Grid.Grid GameModel.Visibility
+setExplored level =
+    let grid = Grid.toList level
+    in map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
+
+initialPlayer : GameModel.Random -> (GameModel.Player, GameModel.Random)
+initialPlayer gen =
+    let elem = "@"
+        |> toText
+        |> monospace
+        |> Text.color white
+        |> centered
+    in  GameModel.player elem "You" gen
+
+initialEnemy : GameModel.Random -> (GameModel.Enemy, GameModel.Random)
+initialEnemy gen =
+    let elem = "e"
+        |> toText
+        |> monospace
+        |> Text.color white
+        |> centered
+    in GameModel.enemy elem "enemy" gen
+
+initialState : GameModel.State
+initialState =
+    let (player, gen') = initialPlayer gen
+        (enemy, gen'') = initialEnemy gen'
+        (firstMap, gen''') = MapGen.randomCave dimensions gen''
+        firstExplored = setExplored firstMap
+    in  GameModel.State
+                    player
+                    [enemy]
+                    firstMap
+                    firstExplored
+                    ["you enter the dungeon"]
+                    gen'''
+                        |> GameUpdate.placeEntities |> GameUpdate.reveal
+
+main = display (constant initialState)
 
 -- Shaders
 

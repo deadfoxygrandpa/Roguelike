@@ -19,7 +19,7 @@ import Graphics.WebGL (..)
 import Generator
 import Generator.Standard
 
-type Vertex = { position:Vec2, offset:Vec3, color:Vec4, coord:Vec3 }
+type Vertex = { position:Vec2, offset:Vec2, color:Vec4, coord:Vec3 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -45,29 +45,29 @@ yScale = 32
 tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
 tile (x, y) perspective texture t =
     case t of
-        GameModel.Floor -> floorTile texture perspective <| vec3 (toFloat x) (toFloat y) 0.0
-        GameModel.Wall  -> wallTile texture perspective <| vec3 (toFloat x) (toFloat y) 0.0
+        GameModel.Floor -> floorTile texture perspective <| vec2 (toFloat x) (toFloat y)
+        GameModel.Wall  -> wallTile texture perspective <| vec2 (toFloat x) (toFloat y)
 
-texturedTile : Int -> Int -> Texture -> Mat4 -> Vec3 -> Entity
+texturedTile : Int -> Int -> Texture -> Mat4 -> Vec2 -> Entity
 texturedTile x y texture perspective offset =
     let (x', y') = (toFloat x, toFloat y)
         black' = fromRGB black
         triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
     in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 x' y' 0}
 
-coloredTile : Color -> Mat4 -> Vec3 -> Entity
+coloredTile : Color -> Mat4 -> Vec2 -> Entity
 coloredTile color perspective offset =
     let color' = fromRGB color
         triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset color'
     in  entity vertexShader fragmentShader triangles {perspective = perspective}
 
-wallTile : Texture -> Mat4 -> Vec3 -> Entity
+wallTile : Texture -> Mat4 -> Vec2 -> Entity
 wallTile = texturedTile 3 2
 
-floorTile : Texture -> Mat4 -> Vec3 -> Entity
+floorTile : Texture -> Mat4 -> Vec2 -> Entity
 floorTile = texturedTile 14 2
 
-fogTile : Mat4 -> Vec3 -> Entity
+fogTile : Mat4 -> Vec2 -> Entity
 fogTile = coloredTile black
 
 background : Grid.Grid GameModel.Tile -> Maybe Texture -> ((Int, Int), [Entity])
@@ -106,17 +106,17 @@ display' state texture =
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec2, offset:Vec3, color:Vec4 } {unif | perspective:Mat4} { vcolor:Vec4 }
+vertexShader : Shader { attr | position:Vec2, offset:Vec2, color:Vec4 } {unif | perspective:Mat4} { vcolor:Vec4 }
 vertexShader = [glsl|
 
 attribute vec2 position;
-attribute vec3 offset;
+attribute vec2 offset;
 attribute vec4 color;
 uniform mat4 perspective;
 varying vec4 vcolor;
 
 void main () {
-    vec2 stuff = (2.0 * offset.xy) + position;
+    vec2 stuff = (2.0 * offset) + position;
     gl_Position = perspective * vec4(stuff, 0.0, 1.0);
     vcolor = color;
 }
@@ -135,11 +135,11 @@ void main () {
 
 |]
 
-vertexShaderTex : Shader { attr | position:Vec2, offset:Vec3, color:Vec4, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec4, vcoord:Vec2 }
+vertexShaderTex : Shader { attr | position:Vec2, offset:Vec2, color:Vec4, coord:Vec3 } {unif | perspective:Mat4} { vcolor:Vec4, vcoord:Vec2 }
 vertexShaderTex = [glsl|
 
 attribute vec2 position;
-attribute vec3 offset;
+attribute vec2 offset;
 attribute vec4 color;
 attribute vec3 coord;
 uniform mat4 perspective;
@@ -147,7 +147,7 @@ varying vec4 vcolor;
 varying vec2 vcoord;
 
 void main () {
-    vec2 stuff = (2.0 * offset.xy) + position;
+    vec2 stuff = (2.0 * offset) + position;
     gl_Position = perspective * vec4(stuff, 0.0, 1.0);
     vcolor = color;
     vcoord = coord.xy;
@@ -174,7 +174,7 @@ void main () {
 
 -- Shape constructors
 
-quad : Point -> Point -> Point -> Point -> Vec3 -> Vec4 -> [Triangle Vertex]
+quad : Point -> Point -> Point -> Point -> Vec2 -> Vec4 -> [Triangle Vertex]
 quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
     let topLeft     = Vertex (vec2 x1 y1) offset color (vec3 0 0 0)
         topRight    = Vertex (vec2 x2 y2) offset color (vec3 1 0 0)

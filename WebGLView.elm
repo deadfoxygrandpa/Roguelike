@@ -45,10 +45,10 @@ texture : Signal (Maybe Texture)
 texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
 
 xScale : Float
-xScale = 32
+xScale = 16
 
 yScale : Float
-yScale = 32
+yScale = 16
 
 tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
 tile (x, y) perspective texture t =
@@ -88,6 +88,12 @@ fogTile = coloredTile black
 exploredTile : Mat4 -> Vec2 -> Entity
 exploredTile = coloredTile (rgba 0 0 0 0.7)
 
+playerTile : Texture -> Mat4 -> Vec2 -> Entity
+playerTile = texturedTile 2 0
+
+enemyTile : Texture -> Mat4 -> Vec2 -> Entity
+enemyTile = texturedTile 5 6
+
 fogger : Grid.Grid GameModel.Visibility -> [Entity]
 fogger level =
     let grid = Grid.toList level
@@ -108,10 +114,43 @@ fogger level =
         tiles = concatMap (\(r, y) -> row y r) <| zip grid (reverse [-h' - 1..h'])
     in  tiles
 
-background : Grid.Grid GameModel.Tile -> Maybe Texture -> ((Int, Int), [Entity])
-background level texture =
+background : Grid.Grid GameModel.Tile -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
+background level texture (w, h) perspective =
     let grid = Grid.toList level
-        (w, h) = (level.size.width, level.size.height)
+
+        row : Texture -> Int -> [GameModel.Tile] -> [Entity]
+        row texture y ts = map (\(t, x) -> tile (x, y) perspective texture t) <| zip ts [-w..w + 1]
+
+        tiles : Maybe Texture -> [Entity]
+        tiles texture = case texture of
+            Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid (reverse [-h - 1..h])
+            Nothing  -> []
+    in  tiles texture
+
+drawPlayer : GameModel.Player -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
+drawPlayer player texture (w, h) perspective =
+    let {x, y} = player.location
+        x' = x - w
+        y' = y - h
+    in case texture of
+            Just tex -> [playerTile tex perspective <| vec2 (toFloat x') (toFloat -y')]
+            Nothing  -> []
+
+drawEnemy : GameModel.Enemy -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
+drawEnemy enemy texture (w, h) perspective =
+    let {x, y} = enemy.location
+        x' = x - w
+        y' = y - h
+    in case texture of
+            Just tex -> [enemyTile tex perspective <| vec2 (toFloat x') (toFloat -y')]
+            Nothing  -> []
+
+display : Signal GameModel.State -> Signal Element
+display state = display' <~ state ~ texture
+
+display' : GameModel.State -> Maybe Texture -> Element
+display' state texture =
+    let (w, h) = (state.level.size.width, state.level.size.height)
         (w' , h')= (w // 2, h // 2)
         (left, right) = case even w of
                             True  -> (toFloat (-w - 1), toFloat w - 1)
@@ -120,28 +159,16 @@ background level texture =
                             True  -> (toFloat (-h - 1), toFloat h - 1)
                             False -> (toFloat (-h), toFloat h)
         perspective = makeOrtho2D left right top bottom
-
-        row : Texture -> Int -> [GameModel.Tile] -> [Entity]
-        row texture y ts = map (\(t, x) -> tile (x, y) perspective texture t) <| zip ts [-w'..w' + 1]
-
-        tiles : Maybe Texture -> [Entity]
-        tiles texture = case texture of
-            Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid (reverse [-h' - 1..h'])
-            Nothing  -> []
-
         w'' = (toFloat w) * xScale |> round
         h'' = (toFloat h) * yScale |> round
+        dimensions = (w'', h'')
 
-    in  ((w'', h''), (tiles texture))
+        bg = background state.level texture (w', h') perspective
+        player = drawPlayer state.player texture (w', h') perspective
+        enemies = concatMap (\enemy -> drawEnemy enemy texture (w', h') perspective) state.enemies
+        --fog = fogger state.explored
+    in  flow down [color black <| webgl dimensions (player ++ enemies ++ bg), asText state.player]
 
-display : Signal GameModel.State -> Signal Element
-display state = display' <~ state ~ texture
-
-display' : GameModel.State -> Maybe Texture -> Element
-display' state texture =
-    let (dimensions, bg) = background state.level texture
-        fog = fogger state.explored
-    in  color black <| webgl dimensions (fog ++ bg)
 
 -- Shaders
 

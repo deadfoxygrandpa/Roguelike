@@ -36,10 +36,10 @@ texture : Signal (Maybe Texture)
 texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
 
 xScale : Float
-xScale = 15
+xScale = 32
 
 yScale : Float
-yScale = 20
+yScale = 32
 
 tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
 tile (x, y) perspective texture t =
@@ -99,54 +99,6 @@ display' : GameModel.State -> Maybe Texture -> Element
 display' state texture =
     let (dimensions, bg) = background state.level texture
     in  color black <| webgl dimensions bg
-
--- Demo
-
-dimensions : (Int, Int)
-dimensions = (30, 20)
-
-gen : GameModel.Random
-gen = Generator.Standard.generator 10023
-
-setExplored : Grid.Grid GameModel.Tile -> Grid.Grid GameModel.Visibility
-setExplored level =
-    let grid = Grid.toList level
-    in map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
-
-initialPlayer : GameModel.Random -> (GameModel.Player, GameModel.Random)
-initialPlayer gen =
-    let elem = "@"
-        |> toText
-        |> monospace
-        |> Text.color white
-        |> centered
-    in  GameModel.player elem "You" gen
-
-initialEnemy : GameModel.Random -> (GameModel.Enemy, GameModel.Random)
-initialEnemy gen =
-    let elem = "e"
-        |> toText
-        |> monospace
-        |> Text.color white
-        |> centered
-    in GameModel.enemy elem "enemy" gen
-
-initialState : GameModel.State
-initialState =
-    let (player, gen') = initialPlayer gen
-        (enemy, gen'') = initialEnemy gen'
-        (firstMap, gen''') = MapGen.randomCave dimensions gen''
-        firstExplored = setExplored firstMap
-    in  GameModel.State
-                    player
-                    [enemy]
-                    firstMap
-                    firstExplored
-                    ["you enter the dungeon"]
-                    gen'''
-                        |> GameUpdate.placeEntities |> GameUpdate.reveal
-
-main = display (constant initialState)
 
 -- Shaders
 

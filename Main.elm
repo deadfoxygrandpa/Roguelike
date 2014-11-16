@@ -10,7 +10,7 @@ import Generator.Standard
 
 import GameModel
 import GameUpdate
-import GameView
+import WebGLView
 import MapGen
 
 port title : String
@@ -48,7 +48,7 @@ initialExplored =
     in  map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
 
 setExplored : Grid.Grid GameModel.Tile -> Grid.Grid GameModel.Visibility
-setExplored level = 
+setExplored level =
     let grid = Grid.toList level
     in map (\row -> map (\_ -> GameModel.Unexplored) row) grid |> Grid.fromList
 
@@ -71,7 +71,7 @@ initialEnemy gen =
     in GameModel.enemy elem "enemy" gen
 
 initialState : GameModel.State
-initialState = 
+initialState =
     let (player, gen') = initialPlayer gen
         (enemy, gen'') = initialEnemy gen'
         (firstMap, gen''') = MapGen.randomCave dimensions gen''
@@ -92,4 +92,4 @@ state : Signal GameModel.State
 state = foldp GameUpdate.update initialState inputs
 
 main : Signal Element
-main = GameView.display <~ state
+main = WebGLView.display state

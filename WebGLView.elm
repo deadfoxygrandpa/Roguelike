@@ -105,7 +105,7 @@ fogger level =
         row y ts = justs <| map (\(t, x) -> fogTiles (x, y) perspective t) <| zip ts [-w'..w' + 1]
 
         tiles : [Entity]
-        tiles = concatMap (\(r, y) -> row y r) <| zip grid [-h'..h' + 1]
+        tiles = concatMap (\(r, y) -> row y r) <| zip grid (reverse [-h' - 1..h'])
     in  tiles
 
 background : Grid.Grid GameModel.Tile -> Maybe Texture -> ((Int, Int), [Entity])
@@ -126,7 +126,7 @@ background level texture =
 
         tiles : Maybe Texture -> [Entity]
         tiles texture = case texture of
-            Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid [-h'..h' + 1]
+            Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid (reverse [-h' - 1..h'])
             Nothing  -> []
 
         w'' = (toFloat w) * xScale |> round

@@ -50,24 +50,26 @@ fromRGB color =
     in  vec3 (div red) (div green) (div blue)
 
 scene maybeTexture = case maybeTexture of
-    Just texture -> color black <| webgl (500, 500) <| write "hi jamie" (-5, 0) texture (makeOrtho2D -20 20 -20 20)
+    Just texture -> color black <| webgl (500, 500) <| write "hi jamie!" (-5, 0) purple texture (makeOrtho2D -20 20 -20 20)
     Nothing -> empty
 
 main = scene <~ texture
 
 -- Layout?
 
-write : String -> (Int, Int) -> Texture -> Mat4 -> [Entity]
-write text (x, y) texture perspective =
+write : String -> (Int, Int) -> Color -> Texture -> Mat4 -> [Entity]
+write text (x, y) color texture perspective =
     let chars = String.toList text
         len = String.length text
-        letter c x' = (pickChar c) texture white (x', y) perspective
+        letter c x' = (pickChar c) texture color (x', y) perspective
     in  map (\(c, a) -> letter c a) <| zip chars [x..x + len + 1]
 
 pickChar : Char -> Character
 pickChar c =
     case c of
         ' ' -> space
+        '!' -> exclamationPoint
+        '"' -> doubleQuote
         'a' -> lowercaseA
         'b' -> lowercaseB
         'c' -> lowercaseC
@@ -115,6 +117,12 @@ unknown = makeLetter 14 0
 
 space : Character
 space = makeLetter 0 0
+
+exclamationPoint : Character
+exclamationPoint = makeLetter 1 2
+
+doubleQuote : Character
+doubleQuote = makeLetter 2 2
 
 lowercaseA : Character
 lowercaseA = makeLetter 1 6
@@ -226,7 +234,7 @@ varying vec2 vcoord;
 void main () {
     vec2 spritecoord = vcoord + sprite.xy;
     vec2 coord = vec2(spritecoord.x, 16.0 - spritecoord.y) / 16.0;
-    gl_FragColor = texture2D(texture, coord);
+    gl_FragColor = vec4(color, 1.0) * texture2D(texture, coord);
 }
 
 |]

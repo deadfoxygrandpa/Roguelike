@@ -83,6 +83,17 @@ pickChar c =
         'm' -> lowercaseM
         'n' -> lowercaseN
         'o' -> lowercaseO
+        'p' -> lowercaseP
+        'q' -> lowercaseQ
+        'r' -> lowercaseR
+        's' -> lowercaseS
+        't' -> lowercaseT
+        'u' -> lowercaseU
+        'v' -> lowercaseV
+        'w' -> lowercaseW
+        'x' -> lowercaseX
+        'y' -> lowercaseY
+        'z' -> lowercaseZ
         _   -> unknown
 
 -- Character base tiles
@@ -149,6 +160,40 @@ lowercaseN = makeLetter 14 6
 
 lowercaseO : Character
 lowercaseO = makeLetter 15 6
+
+lowercaseP : Character
+lowercaseP = makeLetter 0 7
+
+lowercaseQ : Character
+lowercaseQ = makeLetter 1 7
+
+lowercaseR : Character
+lowercaseR = makeLetter 2 7
+
+lowercaseS : Character
+lowercaseS = makeLetter 3 7
+
+lowercaseT : Character
+lowercaseT = makeLetter 4 7
+
+lowercaseU : Character
+lowercaseU = makeLetter 5 7
+
+lowercaseV : Character
+lowercaseV = makeLetter 6 7
+
+lowercaseW : Character
+lowercaseW = makeLetter 7 7
+
+lowercaseX : Character
+lowercaseX = makeLetter 8 7
+
+lowercaseY : Character
+lowercaseY = makeLetter 9 7
+
+lowercaseZ : Character
+lowercaseZ = makeLetter 10 7
+
 
 -- Shaders
 

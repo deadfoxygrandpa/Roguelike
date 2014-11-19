@@ -12,7 +12,7 @@ import Graphics.WebGL (..)
 
 type Vertex = { position:Vec2, coord:Vec2 }
 type Point = (Float, Float)
-type Character = Texture -> Color -> (Int, Int) -> Mat4 -> Entity
+type Character = Texture -> Color -> Float -> (Int, Int) -> Mat4 -> Entity
 
 texture : Signal (Maybe Texture)
 texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
@@ -50,18 +50,18 @@ fromRGB color =
     in  vec3 (div red) (div green) (div blue)
 
 scene maybeTexture = case maybeTexture of
-    Just texture -> color black <| webgl (500, 500) <| write "hi jamie!" (-5, 0) purple texture (makeOrtho2D -20 20 -20 20)
+    Just texture -> color black <| webgl (500, 500) <| write "hi jamie!" (-5, 0) purple 0.5 texture (makeOrtho2D -20 20 -20 20)
     Nothing -> empty
 
 main = scene <~ texture
 
 -- Layout?
 
-write : String -> (Int, Int) -> Color -> Texture -> Mat4 -> [Entity]
-write text (x, y) color texture perspective =
+write : String -> (Int, Int) -> Color -> Float -> Texture -> Mat4 -> [Entity]
+write text (x, y) color spacing texture perspective =
     let chars = String.toList text
         len = String.length text
-        letter c x' = (pickChar c) texture color (x', y) perspective
+        letter c x' = (pickChar c) texture color spacing (x', y) perspective
     in  map (\(c, a) -> letter c a) <| zip chars [x..x + len + 1]
 
 pickChar : Char -> Character
@@ -104,12 +104,13 @@ characterTile : [Triangle Vertex]
 characterTile = quad (-1, 1) (1, 1) (-1, -1) (1, -1)
 
 makeLetter : Int -> Int -> Character
-makeLetter spritex spritey texture color (x, y) perspective =
+makeLetter spritex spritey texture color spacing (x, y) perspective =
     entity vertexShader fragmentShader characterTile { perspective = perspective
                                                      , offset = vec3 (toFloat x) (toFloat y) 0
                                                      , texture = texture
                                                      , sprite = vec3 (toFloat spritex) (toFloat spritey) 0
                                                      , color = fromRGB color
+                                                     , spacing = spacing
                                                      }
 
 unknown : Character
@@ -205,17 +206,18 @@ lowercaseZ = makeLetter 10 7
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec2, coord:Vec2 } { unif | perspective:Mat4, offset:Vec3 } { vcoord:Vec2 }
+vertexShader : Shader { attr | position:Vec2, coord:Vec2 } { unif | perspective:Mat4, offset:Vec3, spacing:Float } { vcoord:Vec2 }
 vertexShader = [glsl|
 
 attribute vec2 position;
 attribute vec2 coord;
 uniform mat4 perspective;
 uniform vec3 offset;
+uniform float spacing;
 varying vec2 vcoord;
 
 void main () {
-    vec2 stuff = (2.0 * offset.xy) + position;
+    vec2 stuff = (spacing * 2.0 * offset.xy) + position;
     gl_Position = perspective * vec4(stuff, 0.0, 1.0);
     vcoord = coord;
 }
@@ -234,7 +236,12 @@ varying vec2 vcoord;
 void main () {
     vec2 spritecoord = vcoord + sprite.xy;
     vec2 coord = vec2(spritecoord.x, 16.0 - spritecoord.y) / 16.0;
-    gl_FragColor = vec4(color, 1.0) * texture2D(texture, coord);
+    vec4 c = texture2D(texture, coord);
+    if (c.a < 0.1) {
+        discard;
+    } else {
+        gl_FragColor = vec4(color, 1.0) * c;
+    }
 }
 
 |]

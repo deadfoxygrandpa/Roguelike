@@ -158,7 +158,9 @@ drawPlayer player texture (w, h) perspective =
         x' = x - w
         y' = y - h
     in case texture of
-            Just tex -> [playerTile tex perspective <| vec2 (toFloat x') (toFloat -y')]
+            Just tex -> [ playerTile tex perspective <| vec2 (toFloat x') (toFloat -y')
+                        , coloredTile black perspective <| vec2 (toFloat x') (toFloat -y')
+                        ]
             Nothing  -> []
 
 drawEnemy : GameModel.Enemy -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
@@ -167,7 +169,9 @@ drawEnemy enemy texture (w, h) perspective =
         x' = x - w
         y' = y - h
     in case texture of
-            Just tex -> [enemyTile tex perspective <| vec2 (toFloat x') (toFloat -y')]
+            Just tex -> [ enemyTile tex perspective <| vec2 (toFloat x') (toFloat -y')
+                        , coloredTile black perspective <| vec2 (toFloat x') (toFloat -y')
+                        ]
             Nothing  -> []
 
 display : Signal GameModel.State -> Signal Element
@@ -260,7 +264,12 @@ varying vec2 vcoord;
 void main () {
     vec2 spritecoord = vcoord + sprite.xy;
     vec2 coord = vec2(spritecoord.x, 16.0 - spritecoord.y) / 16.0;
-    gl_FragColor = texture2D(texture, coord);
+    vec4 color = texture2D(texture, coord);
+    if (color.a < 0.1) {
+        discard;
+    } else {
+        gl_FragColor = color;
+    }
 }
 
 |]

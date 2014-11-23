@@ -42,7 +42,7 @@ justs ms =
 -- Higher level API
 
 texture : Signal (Maybe Texture)
-texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
+texture = responseToMaybe <~ loadTexture "sprite_sheet1.png"
 
 xScale : Float
 xScale = 32

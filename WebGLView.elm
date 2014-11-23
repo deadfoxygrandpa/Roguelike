@@ -20,7 +20,7 @@ import Graphics.WebGL (..)
 import Generator
 import Generator.Standard
 
-type Vertex = { position:Vec2, offset:Vec2, color:Vec4, coord:Vec2 }
+type Vertex = { position:Vec2, color:Vec4, coord:Vec2 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -63,18 +63,19 @@ fogTiles (x, y) perspective t =
         GameModel.Explored   -> Nothing --Just <| exploredTile perspective <| vec2 (toFloat x) (toFloat y)
         GameModel.Visible    -> Nothing
 
+baseTile : [Triangle Vertex]
+baseTile = quad (-1, 1) (1, 1) (-1, -1) (1, -1) (fromRGB black)
+
 texturedTile : Int -> Int -> Texture -> Mat4 -> Vec2 -> Entity
 texturedTile x y texture perspective offset =
     let (x', y') = (toFloat x, toFloat y)
-        black' = fromRGB black
-        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset black'
-    in  entity vertexShaderTex fragmentShaderTex triangles {perspective = perspective, texture = texture, sprite = vec3 x' y' 0}
+    in  entity vertexShaderTex fragmentShaderTex baseTile {perspective = perspective, offset = offset, texture = texture, sprite = vec3 x' y' 0}
 
 coloredTile : Color -> Mat4 -> Vec2 -> Entity
 coloredTile color perspective offset =
     let color' = fromRGB color
-        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) offset color'
-    in  entity vertexShader fragmentShader triangles {perspective = perspective}
+        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) color'
+    in  entity vertexShader fragmentShader triangles {perspective = perspective, offset = offset}
 
 wallTile : Texture -> Mat4 -> Vec2 -> Entity
 wallTile = texturedTile 3 2
@@ -203,13 +204,13 @@ display' state texture =
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec2, offset:Vec2, color:Vec4 } {unif | perspective:Mat4} { vcolor:Vec4 }
+vertexShader : Shader { attr | position:Vec2, color:Vec4 } {unif | perspective:Mat4, offset:Vec2} { vcolor:Vec4 }
 vertexShader = [glsl|
 
 attribute vec2 position;
-attribute vec2 offset;
 attribute vec4 color;
 uniform mat4 perspective;
+uniform vec2 offset;
 varying vec4 vcolor;
 
 void main () {
@@ -232,14 +233,14 @@ void main () {
 
 |]
 
-vertexShaderTex : Shader { attr | position:Vec2, offset:Vec2, color:Vec4, coord:Vec2 } {unif | perspective:Mat4} { vcolor:Vec4, vcoord:Vec2 }
+vertexShaderTex : Shader { attr | position:Vec2, color:Vec4, coord:Vec2 } {unif | perspective:Mat4, offset:Vec2} { vcolor:Vec4, vcoord:Vec2 }
 vertexShaderTex = [glsl|
 
 attribute vec2 position;
-attribute vec2 offset;
 attribute vec4 color;
 attribute vec2 coord;
 uniform mat4 perspective;
+uniform vec2 offset;
 varying vec4 vcolor;
 varying vec2 vcoord;
 
@@ -276,12 +277,12 @@ void main () {
 
 -- Shape constructors
 
-quad : Point -> Point -> Point -> Point -> Vec2 -> Vec4 -> [Triangle Vertex]
-quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) offset color =
-    let topLeft     = Vertex (vec2 x1 y1) offset color (vec2 0 0)
-        topRight    = Vertex (vec2 x2 y2) offset color (vec2 1 0)
-        bottomLeft  = Vertex (vec2 x3 y3) offset color (vec2 0 1)
-        bottomRight = Vertex (vec2 x4 y4) offset color (vec2 1 1)
+quad : Point -> Point -> Point -> Point -> Vec4 -> [Triangle Vertex]
+quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) color =
+    let topLeft     = Vertex (vec2 x1 y1) color (vec2 0 0)
+        topRight    = Vertex (vec2 x2 y2) color (vec2 1 0)
+        bottomLeft  = Vertex (vec2 x3 y3) color (vec2 0 1)
+        bottomRight = Vertex (vec2 x4 y4) color (vec2 1 1)
     in  [ ( topLeft, topRight, bottomLeft)
         , ( bottomLeft, topRight, bottomRight)
         ]

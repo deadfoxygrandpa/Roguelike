@@ -20,7 +20,7 @@ import Graphics.WebGL (..)
 import Generator
 import Generator.Standard
 
-type Vertex = { position:Vec2, color:Vec4, coord:Vec2 }
+type Vertex = { position:Vec2, coord:Vec2 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -64,18 +64,17 @@ fogTiles (x, y) perspective t =
         GameModel.Visible    -> Nothing
 
 baseTile : [Triangle Vertex]
-baseTile = quad (-1, 1) (1, 1) (-1, -1) (1, -1) (fromRGB black)
+baseTile = quad (-1, 1) (1, 1) (-1, -1) (1, -1)
 
 texturedTile : Int -> Int -> Texture -> Mat4 -> Vec2 -> Entity
 texturedTile x y texture perspective offset =
     let (x', y') = (toFloat x, toFloat y)
-    in  entity vertexShaderTex fragmentShaderTex baseTile {perspective = perspective, offset = offset, texture = texture, sprite = vec3 x' y' 0}
+    in  entity vertexShaderTex fragmentShaderTex baseTile {perspective = perspective, offset = offset, color = fromRGB black, texture = texture, sprite = vec3 x' y' 0}
 
 coloredTile : Color -> Mat4 -> Vec2 -> Entity
 coloredTile color perspective offset =
     let color' = fromRGB color
-        triangles = quad (-1, 1) (1, 1) (-1, -1) (1, -1) color'
-    in  entity vertexShader fragmentShader triangles {perspective = perspective, offset = offset}
+    in  entity vertexShader fragmentShader baseTile {perspective = perspective, offset = offset, color = color'}
 
 wallTile : Texture -> Mat4 -> Vec2 -> Entity
 wallTile = texturedTile 3 2
@@ -204,72 +203,66 @@ display' state texture =
 
 -- Shaders
 
-vertexShader : Shader { attr | position:Vec2, color:Vec4 } {unif | perspective:Mat4, offset:Vec2} { vcolor:Vec4 }
+vertexShader : Shader { attr | position:Vec2 } {unif | perspective:Mat4, offset:Vec2} {}
 vertexShader = [glsl|
 
 attribute vec2 position;
-attribute vec4 color;
 uniform mat4 perspective;
 uniform vec2 offset;
-varying vec4 vcolor;
 
 void main () {
     vec2 stuff = (2.0 * offset) + position;
     gl_Position = perspective * vec4(stuff, 0.0, 1.0);
-    vcolor = color;
 }
 
 |]
 
-fragmentShader : Shader {} u { vcolor:Vec4 }
+fragmentShader : Shader {} {unif | color:Vec4 } {}
 fragmentShader = [glsl|
 
 precision mediump float;
-varying vec4 vcolor;
+uniform vec4 color;
 
 void main () {
-    gl_FragColor = vcolor;
+    gl_FragColor = color;
 }
 
 |]
 
-vertexShaderTex : Shader { attr | position:Vec2, color:Vec4, coord:Vec2 } {unif | perspective:Mat4, offset:Vec2} { vcolor:Vec4, vcoord:Vec2 }
+vertexShaderTex : Shader { attr | position:Vec2, coord:Vec2 } {unif | perspective:Mat4, offset:Vec2} { vcoord:Vec2 }
 vertexShaderTex = [glsl|
 
 attribute vec2 position;
-attribute vec4 color;
 attribute vec2 coord;
 uniform mat4 perspective;
 uniform vec2 offset;
-varying vec4 vcolor;
 varying vec2 vcoord;
 
 void main () {
     vec2 stuff = (2.0 * offset) + position;
     gl_Position = perspective * vec4(stuff, 0.0, 1.0);
-    vcolor = color;
     vcoord = coord;
 }
 
 |]
 
-fragmentShaderTex : Shader {} {unif | texture:Texture, sprite:Vec3} { vcolor:Vec4, vcoord:Vec2 }
+fragmentShaderTex : Shader {} {unif | color:Vec4, texture:Texture, sprite:Vec3} { vcoord:Vec2 }
 fragmentShaderTex = [glsl|
 
 precision mediump float;
+uniform vec4 color;
 uniform sampler2D texture;
 uniform vec3 sprite;
-varying vec4 vcolor;
 varying vec2 vcoord;
 
 void main () {
     vec2 spritecoord = vcoord + sprite.xy;
     vec2 coord = vec2(spritecoord.x, 16.0 - spritecoord.y) / 16.0;
-    vec4 color = texture2D(texture, coord);
-    if (color.a < 0.1) {
+    vec4 tcolor = texture2D(texture, coord);
+    if (tcolor.a < 0.1) {
         discard;
     } else {
-        gl_FragColor = color;
+        gl_FragColor = tcolor;
     }
 }
 
@@ -277,12 +270,12 @@ void main () {
 
 -- Shape constructors
 
-quad : Point -> Point -> Point -> Point -> Vec4 -> [Triangle Vertex]
-quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) color =
-    let topLeft     = Vertex (vec2 x1 y1) color (vec2 0 0)
-        topRight    = Vertex (vec2 x2 y2) color (vec2 1 0)
-        bottomLeft  = Vertex (vec2 x3 y3) color (vec2 0 1)
-        bottomRight = Vertex (vec2 x4 y4) color (vec2 1 1)
+quad : Point -> Point -> Point -> Point -> [Triangle Vertex]
+quad (x1, y1) (x2, y2) (x3, y3) (x4, y4) =
+    let topLeft     = Vertex (vec2 x1 y1) (vec2 0 0)
+        topRight    = Vertex (vec2 x2 y2) (vec2 1 0)
+        bottomLeft  = Vertex (vec2 x3 y3) (vec2 0 1)
+        bottomRight = Vertex (vec2 x4 y4) (vec2 1 1)
     in  [ ( topLeft, topRight, bottomLeft)
         , ( bottomLeft, topRight, bottomRight)
         ]

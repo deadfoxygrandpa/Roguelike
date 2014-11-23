@@ -194,7 +194,7 @@ display' state texture =
         gameScreen = webgl dimensions (player ++ enemies ++ bg)
         fogOverlay = webgl dimensions (msgLog ++ info ++ fog)
         screen = layers [gameScreen, fogOverlay]
-    in  flow down [color black screen, asText state.player]
+    in  color black screen
 
 -- Shaders
 

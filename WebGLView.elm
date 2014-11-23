@@ -66,10 +66,10 @@ fogTiles (x, y) perspective t =
 baseTile : [Triangle Vertex]
 baseTile = quad (-1, 1) (1, 1) (-1, -1) (1, -1)
 
-texturedTile : Int -> Int -> Texture -> Mat4 -> Vec2 -> Entity
-texturedTile x y texture perspective offset =
+texturedTile : Int -> Int -> Color -> Texture -> Mat4 -> Vec2 -> Entity
+texturedTile x y color texture perspective offset =
     let (x', y') = (toFloat x, toFloat y)
-    in  entity vertexShaderTex fragmentShaderTex baseTile {perspective = perspective, offset = offset, color = fromRGB black, texture = texture, sprite = vec3 x' y' 0}
+    in  entity vertexShaderTex fragmentShaderTex baseTile {perspective = perspective, offset = offset, color = fromRGB color, texture = texture, sprite = vec3 x' y' 0}
 
 coloredTile : Color -> Mat4 -> Vec2 -> Entity
 coloredTile color perspective offset =
@@ -77,10 +77,10 @@ coloredTile color perspective offset =
     in  entity vertexShader fragmentShader baseTile {perspective = perspective, offset = offset, color = color'}
 
 wallTile : Texture -> Mat4 -> Vec2 -> Entity
-wallTile = texturedTile 3 2
+wallTile = texturedTile 3 2 lightPurple
 
 floorTile : Texture -> Mat4 -> Vec2 -> Entity
-floorTile = texturedTile 14 2
+floorTile = texturedTile 14 2 darkGray
 
 fogTile : Mat4 -> Vec2 -> Entity
 fogTile = coloredTile black
@@ -89,10 +89,10 @@ exploredTile : Mat4 -> Vec2 -> Entity
 exploredTile = coloredTile (rgba 0 0 0 0.7)
 
 playerTile : Texture -> Mat4 -> Vec2 -> Entity
-playerTile = texturedTile 2 0
+playerTile = texturedTile 2 0 white
 
 enemyTile : Texture -> Mat4 -> Vec2 -> Entity
-enemyTile = texturedTile 5 6
+enemyTile = texturedTile 5 6 green
 
 fogger : Grid.Grid GameModel.Visibility -> [Entity]
 fogger level =
@@ -244,7 +244,7 @@ void main () {
     if (tcolor.a < 0.1) {
         discard;
     } else {
-        gl_FragColor = tcolor;
+        gl_FragColor = color * tcolor;
     }
 }
 

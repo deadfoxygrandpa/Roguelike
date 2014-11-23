@@ -4,7 +4,6 @@ import String
 import Text
 import Http (..)
 import Maybe (isJust)
-import Debug
 
 import GameModel
 import GameUpdate
@@ -126,7 +125,7 @@ background level texture (w, h) perspective =
         tiles texture = case texture of
             Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid (reverse [-h - 1..h])
             Nothing  -> []
-    in  tiles (Debug.log "tex" texture)
+    in  tiles texture
 
 drawPlayer : GameModel.Player -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
 drawPlayer player texture (w, h) perspective =

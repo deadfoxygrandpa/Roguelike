@@ -154,6 +154,16 @@ messageLog msgs y texture perspective =
                     in  write (head msgs) (-l, -y - 1) white 1.0 tex perspective
         Nothing  -> []
 
+sideBar : GameModel.State -> (Int, Int) -> Maybe Texture -> Mat4 -> [Entity]
+sideBar state (x, y) texture perspective =
+    case texture of
+        Just tex -> let player = state.player
+                        line (s, y') = write s (-x - 10, y - y') white 1.0 tex perspective
+                    in  concatMap line [ (player.name ++ ": @", 0)
+                                       , ("health: " ++ show player.health, 1)
+                                       ]
+        Nothing  -> []
+
 display : Signal GameModel.State -> Signal Element
 display state = display' <~ state ~ texture
 
@@ -167,8 +177,8 @@ display' state texture =
         (top, bottom) = case even h of
                             True  -> (toFloat (-h - 1), toFloat h - 1)
                             False -> (toFloat (-h), toFloat h)
-        perspective = makeOrtho2D left right (top - 2) bottom
-        w'' = (toFloat w) * xScale |> round
+        perspective = makeOrtho2D (left - 20) right (top - 2) bottom
+        w'' = (toFloat w + 20) * xScale |> round
         h'' = (toFloat h + 2) * yScale |> round
         dimensions = (w'', h'')
 
@@ -177,8 +187,9 @@ display' state texture =
         bg = background state.level texture (w', h') perspective
         fog = fogger state.explored perspective
         msgLog = messageLog state.log h' texture perspective
+        info = sideBar state (w', h') texture perspective
         gameScreen = webgl dimensions (player ++ enemies ++ bg)
-        fogOverlay = webgl dimensions (msgLog ++ fog)
+        fogOverlay = webgl dimensions (msgLog ++ info ++ fog)
         screen = layers [gameScreen, fogOverlay]
     in  flow down [color black screen, asText state.player]
 

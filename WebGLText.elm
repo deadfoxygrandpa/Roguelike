@@ -70,6 +70,18 @@ pickChar c =
         ' ' -> space
         '!' -> exclamationPoint
         '"' -> doubleQuote
+        ':' -> colon
+        '@' -> at
+        '1' -> digit1
+        '2' -> digit2
+        '3' -> digit3
+        '4' -> digit4
+        '5' -> digit5
+        '6' -> digit6
+        '7' -> digit7
+        '8' -> digit8
+        '9' -> digit9
+        '0' -> digit0
         'a' -> lowercaseA
         'b' -> lowercaseB
         'c' -> lowercaseC
@@ -95,6 +107,7 @@ pickChar c =
         'w' -> lowercaseW
         'x' -> lowercaseX
         'y' -> lowercaseY
+        'Y' -> uppercaseY
         'z' -> lowercaseZ
         _   -> unknown
 
@@ -124,6 +137,42 @@ exclamationPoint = makeLetter 1 2
 
 doubleQuote : Character
 doubleQuote = makeLetter 2 2
+
+colon : Character
+colon = makeLetter 10 3
+
+at : Character
+at = makeLetter 2 0
+
+digit1 : Character
+digit1 = makeLetter 1 3
+
+digit2 : Character
+digit2 = makeLetter 2 3
+
+digit3 : Character
+digit3 = makeLetter 3 3
+
+digit4 : Character
+digit4 = makeLetter 4 3
+
+digit5 : Character
+digit5 = makeLetter 5 3
+
+digit6 : Character
+digit6 = makeLetter 6 3
+
+digit7 : Character
+digit7 = makeLetter 7 3
+
+digit8 : Character
+digit8 = makeLetter 8 3
+
+digit9 : Character
+digit9 = makeLetter 9 3
+
+digit0 : Character
+digit0 = makeLetter 0 3
 
 lowercaseA : Character
 lowercaseA = makeLetter 1 6
@@ -199,6 +248,9 @@ lowercaseX = makeLetter 8 7
 
 lowercaseY : Character
 lowercaseY = makeLetter 9 7
+
+uppercaseY : Character
+uppercaseY = makeLetter 9 5
 
 lowercaseZ : Character
 lowercaseZ = makeLetter 10 7

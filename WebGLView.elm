@@ -46,10 +46,10 @@ texture : Signal (Maybe Texture)
 texture = responseToMaybe <~ loadTexture "sprite_sheet1.png"
 
 xScale : Float
-xScale = 32
+xScale = 16
 
 yScale : Float
-yScale = 32
+yScale = 16
 
 tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
 tile (x, y) perspective texture t =
@@ -95,18 +95,11 @@ playerTile = texturedTile 2 0 white
 enemyTile : Texture -> Mat4 -> Vec2 -> Entity
 enemyTile = texturedTile 5 6 green
 
-fogger : Grid.Grid GameModel.Visibility -> [Entity]
-fogger level =
+fogger : Grid.Grid GameModel.Visibility -> Mat4 -> [Entity]
+fogger level perspective =
     let grid = Grid.toList level
         (w, h) = (level.size.width, level.size.height)
         (w' , h')= (w // 2, h // 2)
-        (left, right) = case even w of
-                            True  -> (toFloat (-w - 1), toFloat w - 1)
-                            False -> (toFloat (-w), toFloat w)
-        (top, bottom) = case even h of
-                            True  -> (toFloat (-h - 1), toFloat h - 1)
-                            False -> (toFloat (-h), toFloat h)
-        perspective = makeOrtho2D left right top bottom
 
         row : Int -> [GameModel.Visibility] -> [Entity]
         row y ts = justs <| map (\(t, x) -> fogTiles (x, y) perspective t) <| zip ts [-w'..w' + 1]
@@ -153,12 +146,12 @@ drawEnemy enemy visibility texture (w, h) perspective =
         _ -> []
 
 
-messageLog : [String] -> Maybe Texture -> Mat4 -> [Entity]
-messageLog msgs texture perspective =
+messageLog : [String] -> Int -> Maybe Texture -> Mat4 -> [Entity]
+messageLog msgs y texture perspective =
     case texture of
         Just tex -> let len = String.length (head msgs)
                         l = len // 2
-                    in  write (head msgs) (-l, -10) white 1.0 tex perspective
+                    in  write (head msgs) (-l, -y - 1) white 1.0 tex perspective
         Nothing  -> []
 
 display : Signal GameModel.State -> Signal Element
@@ -167,23 +160,23 @@ display state = display' <~ state ~ texture
 display' : GameModel.State -> Maybe Texture -> Element
 display' state texture =
     let (w, h) = (state.level.size.width, state.level.size.height)
-        (w' , h')= (w // 2, h // 2)
+        (w', h') = (w // 2, h // 2)
         (left, right) = case even w of
                             True  -> (toFloat (-w - 1), toFloat w - 1)
                             False -> (toFloat (-w), toFloat w)
         (top, bottom) = case even h of
                             True  -> (toFloat (-h - 1), toFloat h - 1)
                             False -> (toFloat (-h), toFloat h)
-        perspective = makeOrtho2D left right top bottom
+        perspective = makeOrtho2D left right (top - 2) bottom
         w'' = (toFloat w) * xScale |> round
-        h'' = (toFloat h) * yScale |> round
+        h'' = (toFloat h + 2) * yScale |> round
         dimensions = (w'', h'')
 
         player = drawPlayer state.player texture (w', h') perspective
         enemies = concatMap (\enemy -> drawEnemy enemy (GameModel.visibility state enemy.location) texture (w', h') perspective) state.enemies
         bg = background state.level texture (w', h') perspective
-        fog = fogger state.explored
-        msgLog = messageLog state.log texture perspective
+        fog = fogger state.explored perspective
+        msgLog = messageLog state.log h' texture perspective
         gameScreen = webgl dimensions (player ++ enemies ++ bg)
         fogOverlay = webgl dimensions (msgLog ++ fog)
         screen = layers [gameScreen, fogOverlay]

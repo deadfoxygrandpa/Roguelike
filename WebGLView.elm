@@ -138,16 +138,19 @@ drawPlayer player texture (w, h) perspective =
                         ]
             Nothing  -> []
 
-drawEnemy : GameModel.Enemy -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
-drawEnemy enemy texture (w, h) perspective =
-    let {x, y} = enemy.location
-        x' = x - w
-        y' = y - h
-    in case texture of
-            Just tex -> [ enemyTile tex perspective <| vec2 (toFloat x') (toFloat -y')
-                        , coloredTile black perspective <| vec2 (toFloat x') (toFloat -y')
-                        ]
-            Nothing  -> []
+drawEnemy : GameModel.Enemy -> GameModel.Visibility -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
+drawEnemy enemy visibility texture (w, h) perspective =
+    case visibility of
+        GameModel.Visible -> let {x, y} = enemy.location
+                                 x' = x - w
+                                 y' = y - h
+                             in case texture of
+                                     Just tex -> [ enemyTile tex perspective <| vec2 (toFloat x') (toFloat -y')
+                                                 , coloredTile black perspective <| vec2 (toFloat x') (toFloat -y')
+                                                 ]
+                                     Nothing  -> []
+        _ -> []
+
 
 display : Signal GameModel.State -> Signal Element
 display state = display' <~ state ~ texture
@@ -168,11 +171,13 @@ display' state texture =
         dimensions = (w'', h'')
 
         player = drawPlayer state.player texture (w', h') perspective
-        enemies = concatMap (\enemy -> drawEnemy enemy texture (w', h') perspective) state.enemies
+        enemies = concatMap (\enemy -> drawEnemy enemy (GameModel.visibility state enemy.location) texture (w', h') perspective) state.enemies
         bg = background state.level texture (w', h') perspective
-        --fog = fogger state.explored
+        fog = fogger state.explored
         gameScreen = webgl dimensions (player ++ enemies ++ bg)
-    in  flow down [color black gameScreen, asText state.player]
+        fogOverlay = webgl dimensions fog
+        screen = layers [gameScreen, fogOverlay]
+    in  flow down [color black screen, asText state.player]
 
 -- Shaders
 
@@ -197,7 +202,11 @@ precision mediump float;
 uniform vec4 color;
 
 void main () {
-    gl_FragColor = color;
+    if (color.a == 0.0) {
+        discard;
+    } else {
+        gl_FragColor = color;
+    }
 }
 
 |]

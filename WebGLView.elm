@@ -4,6 +4,7 @@ import String
 import Text
 import Http (..)
 import Maybe (isJust)
+import Debug
 
 import GameModel
 import GameUpdate
@@ -45,10 +46,10 @@ texture : Signal (Maybe Texture)
 texture = responseToMaybe <~ loadTexture "/sprite_sheet1.png"
 
 xScale : Float
-xScale = 16
+xScale = 32
 
 yScale : Float
-yScale = 16
+yScale = 32
 
 tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
 tile (x, y) perspective texture t =
@@ -60,7 +61,7 @@ fogTiles : (Int, Int) -> Mat4 -> GameModel.Visibility -> Maybe Entity
 fogTiles (x, y) perspective t =
     case t of
         GameModel.Unexplored -> Just <| fogTile perspective <| vec2 (toFloat x) (toFloat y)
-        GameModel.Explored   -> Nothing --Just <| exploredTile perspective <| vec2 (toFloat x) (toFloat y)
+        GameModel.Explored   -> Just <| exploredTile perspective <| vec2 (toFloat x) (toFloat y)
         GameModel.Visible    -> Nothing
 
 baseTile : [Triangle Vertex]
@@ -125,32 +126,7 @@ background level texture (w, h) perspective =
         tiles texture = case texture of
             Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid (reverse [-h - 1..h])
             Nothing  -> []
-    in  tiles texture
-
-backgroundElement : Grid.Grid GameModel.Tile -> Maybe Texture -> Element
-backgroundElement level texture =
-    let grid = Grid.toList level
-        (w, h) = (level.size.width, level.size.height)
-        (w' , h')= (w // 2, h // 2)
-        (left, right) = case even w of
-                            True  -> (toFloat (-w - 1), toFloat w - 1)
-                            False -> (toFloat (-w), toFloat w)
-        (top, bottom) = case even h of
-                            True  -> (toFloat (-h - 1), toFloat h - 1)
-                            False -> (toFloat (-h), toFloat h)
-        perspective = makeOrtho2D left right top bottom
-        w'' = (toFloat w) * xScale |> round
-        h'' = (toFloat h) * yScale |> round
-        dimensions = (w'', h'')
-
-        row : Texture -> Int -> [GameModel.Tile] -> [Entity]
-        row texture y ts = map (\(t, x) -> tile (x, y) perspective texture t) <| zip ts [-w'..w' + 1]
-
-        tiles : Maybe Texture -> [Entity]
-        tiles texture = case texture of
-            Just tex -> concatMap (\(r, y) -> row tex y r) <| zip grid (reverse [-h' - 1..h'])
-            Nothing  -> []
-    in  color black <| webgl dimensions (tiles texture)
+    in  tiles (Debug.log "tex" texture)
 
 drawPlayer : GameModel.Player -> Maybe Texture -> (Int, Int) -> Mat4 -> [Entity]
 drawPlayer player texture (w, h) perspective =
@@ -175,11 +151,7 @@ drawEnemy enemy texture (w, h) perspective =
             Nothing  -> []
 
 display : Signal GameModel.State -> Signal Element
-display state =
-    let guys = display' <~ state ~ texture
-        level = .level <~ state |> dropRepeats
-        bg = backgroundElement <~ level ~ texture
-    in  (\a b -> layers [a, b]) <~ bg ~ guys
+display state = display' <~ state ~ texture
 
 display' : GameModel.State -> Maybe Texture -> Element
 display' state texture =
@@ -198,8 +170,10 @@ display' state texture =
 
         player = drawPlayer state.player texture (w', h') perspective
         enemies = concatMap (\enemy -> drawEnemy enemy texture (w', h') perspective) state.enemies
+        bg = background state.level texture (w', h') perspective
         --fog = fogger state.explored
-    in  flow down [webgl dimensions (player ++ enemies), asText state.player]
+        gameScreen = webgl dimensions (player ++ enemies ++ bg)
+    in  flow down [color black gameScreen, asText state.player]
 
 -- Shaders
 

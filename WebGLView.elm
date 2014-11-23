@@ -20,7 +20,7 @@ import Graphics.WebGL (..)
 import Generator
 import Generator.Standard
 
-type Vertex = { position:Vec2, coord:Vec2 }
+type Vertex = { position:Vec2, textureCoord:Vec2 }
 type Point = (Float, Float)
 
 even : Int -> Bool
@@ -229,11 +229,11 @@ void main () {
 
 |]
 
-vertexShaderTex : Shader { attr | position:Vec2, coord:Vec2 } {unif | perspective:Mat4, offset:Vec2} { vcoord:Vec2 }
+vertexShaderTex : Shader { attr | position:Vec2, textureCoord:Vec2 } {unif | perspective:Mat4, offset:Vec2} { vcoord:Vec2 }
 vertexShaderTex = [glsl|
 
 attribute vec2 position;
-attribute vec2 coord;
+attribute vec2 textureCoord;
 uniform mat4 perspective;
 uniform vec2 offset;
 varying vec2 vcoord;
@@ -241,7 +241,7 @@ varying vec2 vcoord;
 void main () {
     vec2 stuff = (2.0 * offset) + position;
     gl_Position = perspective * vec4(stuff, 0.0, 1.0);
-    vcoord = coord;
+    vcoord = textureCoord;
 }
 
 |]

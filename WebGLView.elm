@@ -4,6 +4,7 @@ import String
 import Text
 import Http (..)
 import Maybe (isJust)
+import List
 
 import WebGLText (write)
 import GameModel
@@ -46,10 +47,10 @@ texture : Signal (Maybe Texture)
 texture = responseToMaybe <~ loadTexture "sprite_sheet1.png"
 
 xScale : Float
-xScale = 16
+xScale = 32
 
 yScale : Float
-yScale = 16
+yScale = 32
 
 tile : (Int, Int) -> Mat4 -> Texture -> GameModel.Tile -> Entity
 tile (x, y) perspective texture t =
@@ -159,9 +160,11 @@ sideBar state (x, y) texture perspective =
     case texture of
         Just tex -> let player = state.player
                         line (s, y') = write s (-x - 10, y - y') white 1.0 tex perspective
-                    in  concatMap line [ (player.name ++ ": @", 0)
-                                       , ("health: " ++ show player.health, 1)
-                                       ]
+                        lines = [ player.name ++ ": @"
+                                , ""
+                                , "health: " ++ show player.health
+                                ]
+                    in  concatMap line (zip lines [0 .. List.length lines])
         Nothing  -> []
 
 display : Signal GameModel.State -> Signal Element

@@ -5,6 +5,7 @@ import Text
 import Http (..)
 import Maybe (isJust)
 
+import WebGLText (write)
 import GameModel
 import GameUpdate
 import GameView
@@ -152,6 +153,14 @@ drawEnemy enemy visibility texture (w, h) perspective =
         _ -> []
 
 
+messageLog : [String] -> Maybe Texture -> Mat4 -> [Entity]
+messageLog msgs texture perspective =
+    case texture of
+        Just tex -> let len = String.length (head msgs)
+                        l = len // 2
+                    in  write (head msgs) (-l, -10) white 1.0 tex perspective
+        Nothing  -> []
+
 display : Signal GameModel.State -> Signal Element
 display state = display' <~ state ~ texture
 
@@ -174,8 +183,9 @@ display' state texture =
         enemies = concatMap (\enemy -> drawEnemy enemy (GameModel.visibility state enemy.location) texture (w', h') perspective) state.enemies
         bg = background state.level texture (w', h') perspective
         fog = fogger state.explored
+        msgLog = messageLog state.log texture perspective
         gameScreen = webgl dimensions (player ++ enemies ++ bg)
-        fogOverlay = webgl dimensions fog
+        fogOverlay = webgl dimensions (msgLog ++ fog)
         screen = layers [gameScreen, fogOverlay]
     in  flow down [color black screen, asText state.player]
 
